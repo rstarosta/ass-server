@@ -1,9 +1,10 @@
 package ass.starorad.semestralproject.server;
 
-import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpResponse;
 import java.nio.channels.SocketChannel;
 
 public interface IHttpResponse {
   SocketChannel getClient();
-  FullHttpResponse getHttpResponse();
+  HttpResponse getHttpResponse();
+  byte[] getContent();
 }

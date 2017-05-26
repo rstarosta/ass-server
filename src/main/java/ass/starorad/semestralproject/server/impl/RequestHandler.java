@@ -6,11 +6,18 @@ import ass.starorad.semestralproject.server.IRawRequest;
 import ass.starorad.semestralproject.server.IRequestHandler;
 import ass.starorad.semestralproject.server.IResponse;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.DefaultHttpContent;
+import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class RequestHandler implements IRequestHandler {
 
@@ -27,10 +34,10 @@ public class RequestHandler implements IRequestHandler {
     return upstream
         .compose(parser)
         .map(httpRequest -> {
-          FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-          response.content().writeBytes("hai bois".getBytes());
+          HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+          byte[] content = Files.readAllBytes(Paths.get("dude.jpg"));
 
-          return new CachedHttpResponse(httpRequest.getClient(), response);
+          return new CachedHttpResponse(httpRequest.getClient(), response, content);
         })
         .compose(encoder);
   }
