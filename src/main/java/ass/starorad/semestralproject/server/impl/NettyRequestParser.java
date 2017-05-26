@@ -19,6 +19,7 @@ public class NettyRequestParser implements IHttpRequestParser {
 
       ch.writeInbound(Unpooled.wrappedBuffer(request.getRequestData()));
       HttpRequest parsedRequest = ch.readInbound();
+      ch.close();
 
       return new ParsedHttpRequest(request.getClient(), parsedRequest);
     });

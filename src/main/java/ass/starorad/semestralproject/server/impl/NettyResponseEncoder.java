@@ -20,6 +20,8 @@ public class NettyResponseEncoder implements IHttpResponseEncoder {
       ch.writeOutbound(response.getHttpResponse());
 
       ByteBuf byteBuf = ch.readOutbound();
+      ch.close();
+
       if(content != null) {
         byteBuf.writeBytes(content);
       }
