@@ -5,9 +5,9 @@ import java.nio.channels.SocketChannel;
 
 public class ClientRequest implements IRawRequest {
 	protected SocketChannel client;
-	protected String requestData;
+	protected byte[] requestData;
 
-	public ClientRequest(SocketChannel clientAddress, String requestData) {
+	public ClientRequest(SocketChannel clientAddress, byte[] requestData) {
 		this.client = clientAddress;
 		this.requestData = requestData;
 	}
@@ -16,7 +16,7 @@ public class ClientRequest implements IRawRequest {
 		return client;
 	}
 
-	public String getRequestData() {
+	public byte[] getRequestData() {
 		return requestData;
 	}
 

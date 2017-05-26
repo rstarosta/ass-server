@@ -5,8 +5,12 @@ import ass.starorad.semestralproject.server.IRawRequest;
 import ass.starorad.semestralproject.server.IRequestHandler;
 import ass.starorad.semestralproject.server.IResponseWriter;
 import ass.starorad.semestralproject.server.IServer;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
@@ -27,7 +31,7 @@ public class Server implements IServer {
   protected boolean exit = false;
 
   private ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
-  private Map<SocketChannel, StringBuilder> attachments = new HashMap<>();
+  private Map<SocketChannel, ByteArrayOutputStream> attachments = new HashMap<>();
 
   /*
    * Use RxJava Subject
@@ -108,20 +112,34 @@ public class Server implements IServer {
     validKeys.filter(SelectionKey::isReadable)
         .forEach(key -> {
           SocketChannel socketChannel = (SocketChannel) key.channel();
-          StringBuilder currentMessageBuilder = getOrCreateMessageBuilder(socketChannel);
+          ByteArrayOutputStream byteArrayOutputStream = getOrCreateMessageBuilder(socketChannel);
 
-          String data = ByteBufferUtil.readFromChannel(byteBuffer, socketChannel);
-          currentMessageBuilder.append(data);
+          byte[] bytes =  ByteBufferUtil.readFromChannel(byteBuffer, socketChannel);
+          byteArrayOutputStream.write(bytes);
 
-          if (data.endsWith(delimiter)) {
-            String finalData = currentMessageBuilder.toString().trim();
-
-            requests.onNext(new ClientRequest(socketChannel, finalData));
+          if(byteArrayEndsWith(bytes, delimiter)) {
+            requests.onNext(new ClientRequest(socketChannel, byteArrayOutputStream.toByteArray()));
+            attachments.remove(socketChannel);
           }
         });
     }
 
-  private StringBuilder getOrCreateMessageBuilder(SocketChannel socketChannel) {
-    return attachments.computeIfAbsent(socketChannel, c -> new StringBuilder());
+  private ByteArrayOutputStream getOrCreateMessageBuilder(SocketChannel socketChannel) {
+    return attachments.computeIfAbsent(socketChannel, c -> new ByteArrayOutputStream());
+  }
+
+  private boolean byteArrayEndsWith(byte[] bytes, String string) {
+    if(string == null || bytes.length < string.length()) {
+      return false;
+    }
+
+    byte[] end = string.getBytes();
+    for(int i = 0; i < end.length; i++) {
+      if(bytes[bytes.length - 1 - i] != end[end.length - 1 - i]) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }
