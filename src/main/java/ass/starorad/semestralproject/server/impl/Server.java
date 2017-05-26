@@ -17,7 +17,6 @@ import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import org.apache.http.message.BasicLineParser;
 
 public class Server implements IServer {
 
@@ -30,7 +29,6 @@ public class Server implements IServer {
   private ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
   private Map<SocketChannel, StringBuilder> attachments = new HashMap<>();
 
-  private BasicLineParser parser = new BasicLineParser();
   /*
    * Use RxJava Subject
    * You can use PublishSubject, which is instantiated by PublishSubject.create()
