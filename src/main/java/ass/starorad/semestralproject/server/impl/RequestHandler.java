@@ -17,16 +17,10 @@ public class RequestHandler implements IRequestHandler {
 
   @Override
   public ObservableSource<IResponse> apply(Observable<IRawRequest> upstream) {
-    //return upstream.map(request -> {
-    //  String requestData = request.getRequestData();
-    //  String responseData =
-    //      (requestData.length() % 2 == 0) ? requestData.toUpperCase() : requestData.toLowerCase();
-
-    //  return new ClientResponse(request.getClient(), responseData);
-    //});
-
     return upstream
-        .compose(parser).map(httpRequest -> new ClientResponse(httpRequest.getClient(), httpRequest.getHttpRequest().toString()));
+        .compose(parser)
+        .map(httpRequest -> new ClientResponse(httpRequest.getClient(),
+            httpRequest.getHttpRequest().toString()));
   }
 
 }
