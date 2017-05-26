@@ -11,7 +11,7 @@ public class ResponseWriter implements IResponseWriter {
 
   @Override
   public void accept(IResponse t) throws Exception {
-    byte[] data = t.getResponseData().getBytes();
+    byte[] data = t.getResponseData();
     ByteBuffer byteBuffer = ByteBuffer.wrap(data);
 
     SocketChannel client = t.getClient();

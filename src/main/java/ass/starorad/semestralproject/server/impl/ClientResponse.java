@@ -6,9 +6,9 @@ import ass.starorad.semestralproject.server.IResponse;
 
 public class ClientResponse implements IResponse {
 	protected SocketChannel client;
-	protected String responseData;
+	protected byte[] responseData;
 	
-	public ClientResponse(SocketChannel client, String responseData) {
+	public ClientResponse(SocketChannel client, byte[] responseData) {
 		this.client = client;
 		this.responseData = responseData;
 	}
@@ -17,7 +17,7 @@ public class ClientResponse implements IResponse {
 		return client;
 	}
 	
-	public String getResponseData() {
+	public byte[] getResponseData() {
 		return responseData;
 	}
 }

@@ -20,7 +20,7 @@ public class RequestHandler implements IRequestHandler {
     return upstream
         .compose(parser)
         .map(httpRequest -> new ClientResponse(httpRequest.getClient(),
-            httpRequest.getHttpRequest().toString()));
+            httpRequest.getHttpRequest().toString().getBytes()));
   }
 
 }

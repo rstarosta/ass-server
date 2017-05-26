@@ -4,5 +4,5 @@ import java.nio.channels.SocketChannel;
 
 public interface IResponse {
 	SocketChannel getClient();
-	String getResponseData();
+	byte[] getResponseData();
 }
