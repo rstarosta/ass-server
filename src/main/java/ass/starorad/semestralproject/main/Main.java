@@ -1,6 +1,5 @@
 package ass.starorad.semestralproject.main;
 
-import ass.starorad.semestralproject.server.impl.HttpCoreRequestParser;
 import ass.starorad.semestralproject.server.impl.NettyRequestParser;
 import java.io.IOException;
 import java.net.InetSocketAddress;
