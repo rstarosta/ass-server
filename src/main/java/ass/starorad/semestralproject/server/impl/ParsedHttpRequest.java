@@ -1,8 +1,8 @@
 package ass.starorad.semestralproject.server.impl;
 
 import ass.starorad.semestralproject.server.IHttpRequest;
+import io.netty.handler.codec.http.HttpRequest;
 import java.nio.channels.SocketChannel;
-import org.apache.http.HttpRequest;
 
 public class ParsedHttpRequest implements IHttpRequest {
 

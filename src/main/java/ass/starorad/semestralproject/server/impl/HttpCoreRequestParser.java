@@ -25,7 +25,8 @@ public class HttpCoreRequestParser implements IHttpRequestParser {
           HttpRequest httpRequest = parser.parse();
           buffer.clear();
 
-          return new ParsedHttpRequest(request.getClient(), httpRequest);
+          //return new ParsedHttpRequest(request.getClient(), httpRequest);
+          return null;
         });
   }
 }
