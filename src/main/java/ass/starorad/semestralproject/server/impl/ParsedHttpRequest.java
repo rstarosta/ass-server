@@ -23,6 +23,14 @@ public class ParsedHttpRequest implements IHttpRequest {
     return httpRequest;
   }
 
+  //TODO: Save this into a property?
+  @Override
+  public String getPath() {
+    String path = httpRequest.uri().substring(1);
+
+    return path.isEmpty() ? "index.html" : path;
+  }
+
   @Override
   public String toString() {
     return "ParsedHttpRequest{" +

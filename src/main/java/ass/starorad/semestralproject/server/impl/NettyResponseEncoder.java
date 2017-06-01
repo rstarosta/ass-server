@@ -16,8 +16,8 @@ public class NettyResponseEncoder implements IHttpResponseEncoder {
     return observable.map(response -> {
       EmbeddedChannel ch = new EmbeddedChannel(new HttpResponseEncoder());
 
-      byte[] content = response.getContent();
-      ch.writeOutbound(response.getHttpResponse());
+      byte[] content = response.getResponseData().getContent();
+      ch.writeOutbound(response.getResponseData().getHttpResponse());
 
       ByteBuf byteBuf = ch.readOutbound();
       ch.close();

@@ -2,6 +2,7 @@ package ass.starorad.semestralproject.main;
 
 import ass.starorad.semestralproject.server.impl.NettyRequestParser;
 import ass.starorad.semestralproject.server.impl.NettyResponseEncoder;
+import ass.starorad.semestralproject.server.impl.ReactiveCache;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
@@ -27,7 +28,8 @@ public class Main {
     server.run(
         new RequestHandler(
             new NettyRequestParser(),
-            new NettyResponseEncoder()
+            new NettyResponseEncoder(),
+            new ReactiveCache()
         ),
         new ResponseWriter(),
         "\r\n"
