@@ -3,6 +3,7 @@ package ass.starorad.semestralproject.main;
 import ass.starorad.semestralproject.server.impl.NettyRequestParser;
 import ass.starorad.semestralproject.server.impl.NettyResponseEncoder;
 import ass.starorad.semestralproject.server.impl.ReactiveCache;
+import ass.starorad.semestralproject.server.impl.FileManager;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
@@ -16,6 +17,8 @@ public class Main {
 
   public static void main(String[] args) throws IOException {
     int port = 8080;
+    String documentRoot = ".";
+
     if (args.length > 0) {
       try {
         port = Integer.parseInt(args[0]);
@@ -24,12 +27,19 @@ public class Main {
       }
     }
 
+    if(args.length > 1) {
+      documentRoot = args[1];
+    }
+
     IServer server = new Server(new InetSocketAddress("localhost", port));
     server.run(
         new RequestHandler(
             new NettyRequestParser(),
             new NettyResponseEncoder(),
-            new ReactiveCache()
+            new FileManager(
+                documentRoot,
+                new ReactiveCache()
+            )
         ),
         new ResponseWriter(),
         "\r\n"

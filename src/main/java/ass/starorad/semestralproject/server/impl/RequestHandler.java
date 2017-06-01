@@ -1,6 +1,6 @@
 package ass.starorad.semestralproject.server.impl;
 
-import ass.starorad.semestralproject.server.ICache;
+import ass.starorad.semestralproject.server.IFileManager;
 import ass.starorad.semestralproject.server.IHttpRequestParser;
 import ass.starorad.semestralproject.server.IHttpResponseEncoder;
 import ass.starorad.semestralproject.server.IRawRequest;
@@ -13,19 +13,19 @@ public class RequestHandler implements IRequestHandler {
 
   private IHttpRequestParser parser;
   private IHttpResponseEncoder encoder;
-  private ICache cache;
+  private IFileManager fileManager;
 
-  public RequestHandler(IHttpRequestParser parser, IHttpResponseEncoder encoder, ICache cache) {
+  public RequestHandler(IHttpRequestParser parser, IHttpResponseEncoder encoder, IFileManager fileManager) {
     this.parser = parser;
     this.encoder = encoder;
-    this.cache = cache;
+    this.fileManager = fileManager;
   }
 
   @Override
   public ObservableSource<IResponse> apply(Observable<IRawRequest> upstream) {
     return upstream
         .compose(parser)
-        .compose(cache)
+        .compose(fileManager)
         .compose(encoder);
   }
 

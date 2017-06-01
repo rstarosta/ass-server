@@ -13,6 +13,12 @@ public class HttpResponseData {
           HttpResponseStatus.NOT_FOUND
       ));
 
+  public static HttpResponseData UnauthorizedResponse = new HttpResponseData(
+      new DefaultHttpResponse(
+          HttpVersion.HTTP_1_1,
+          HttpResponseStatus.UNAUTHORIZED
+      ));
+
   private HttpResponse httpResponse;
   private byte[] content;
 
