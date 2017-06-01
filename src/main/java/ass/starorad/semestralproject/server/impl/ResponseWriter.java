@@ -2,6 +2,7 @@ package ass.starorad.semestralproject.server.impl;
 
 import ass.starorad.semestralproject.server.IResponse;
 import ass.starorad.semestralproject.server.IResponseWriter;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
@@ -9,16 +10,18 @@ import java.nio.channels.SocketChannel;
 public class ResponseWriter implements IResponseWriter {
 
   @Override
-  public void accept(IResponse t) throws Exception {
+  public void accept(IResponse t) throws IOException {
     byte[] data = t.getResponseData();
     ByteBuffer byteBuffer = ByteBuffer.wrap(data);
 
     SocketChannel client = t.getClient();
-    while(byteBuffer.hasRemaining()) {
-      client.write(byteBuffer);
+    try {
+      while(byteBuffer.hasRemaining()) {
+          client.write(byteBuffer);
+      }
+      client.close();
+    } catch(IOException exception) {
+      exception.printStackTrace();
     }
-
-    client.close();
   }
-
 }

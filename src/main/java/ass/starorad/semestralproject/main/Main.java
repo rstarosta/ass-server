@@ -14,7 +14,7 @@ import ass.starorad.semestralproject.server.impl.Server;
 
 public class Main {
 
-  public static void main(String[] args) throws IOException, InterruptedException {
+  public static void main(String[] args) throws IOException {
     int port = 8080;
     if (args.length > 0) {
       try {
