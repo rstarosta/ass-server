@@ -28,6 +28,7 @@ public class NettyResponseEncoder implements IHttpResponseEncoder {
 
       byte[] bytes = new byte[byteBuf.readableBytes()];
       byteBuf.readBytes(bytes);
+      byteBuf.release();
 
       return new EncodedResponse(response.getClient(), bytes);
     });

@@ -3,6 +3,7 @@ package ass.starorad.semestralproject.server.impl;
 import ass.starorad.semestralproject.server.IHttpRequest;
 import ass.starorad.semestralproject.server.IHttpRequestParser;
 import ass.starorad.semestralproject.server.IRawRequest;
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.HttpRequest;
@@ -17,8 +18,10 @@ public class NettyRequestParser implements IHttpRequestParser {
     return observable.map(request -> {
       EmbeddedChannel ch = new EmbeddedChannel(new HttpRequestDecoder());
 
-      ch.writeInbound(Unpooled.wrappedBuffer(request.getRequestData()));
+      ByteBuf byteBuf = Unpooled.wrappedBuffer(request.getRequestData());
+      ch.writeInbound(byteBuf);
       HttpRequest parsedRequest = ch.readInbound();
+
       ch.close();
 
       return new ParsedHttpRequest(request.getClient(), parsedRequest);
