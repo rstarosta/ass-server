@@ -16,7 +16,7 @@ public class NettyRequestParser implements IHttpRequestParser {
   @Override
   public ObservableSource<IHttpRequest> apply(Observable<IRawRequest> observable) {
     return observable.map(request -> {
-      EmbeddedChannel ch = new EmbeddedChannel(new HttpRequestDecoder());
+      EmbeddedChannel ch = new EmbeddedChannel(new HttpRequestDecoder(8192, 8192, 8192));
 
       ByteBuf byteBuf = Unpooled.wrappedBuffer(request.getRequestData());
       ch.writeInbound(byteBuf);
