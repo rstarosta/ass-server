@@ -3,6 +3,7 @@ package ass.starorad.semestralproject.server.impl;
 import ass.starorad.semestralproject.server.IHttpRequest;
 import io.netty.handler.codec.http.HttpRequest;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.nio.channels.SocketChannel;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -38,7 +39,12 @@ public class ParsedHttpRequest implements IHttpRequest {
   }
 
   private String extractPathFromRequest(HttpRequest request) {
-    String path = request.uri();
+    String path = null;
+    try {
+      path = URLDecoder.decode(request.uri(), "UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      e.printStackTrace();
+    }
 
     int paramIndex = path.indexOf('?');
     int anchorIndex = path.indexOf('#');
