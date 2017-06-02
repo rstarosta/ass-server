@@ -4,6 +4,7 @@ import ass.starorad.semestralproject.server.IFileManager;
 import ass.starorad.semestralproject.server.IHttpRequest;
 import ass.starorad.semestralproject.server.IHttpResponse;
 import com.sun.xml.internal.messaging.saaj.packaging.mime.internet.ParseException;
+import io.netty.handler.codec.http.HttpMethod;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
 import io.reactivex.Single;
@@ -24,15 +25,27 @@ public class FileManager implements IFileManager {
   }
 
   public Single<HttpResponseData> getResponseData(IHttpRequest request) {
-    Path path = rootDirectory.resolve(request.getPath()).normalize().toAbsolutePath();
-    AuthorizationData authorizationData = request.getAuthorizationData();
-
-    if (!checkPath(path)) {
-      return Single.just(HttpResponseData.FileNotFoundResponse);
-    } else if(!checkAuthorization(path, authorizationData)) {
-      return Single.just(HttpResponseData.UnauthorizedResponse);
+    if(!checkMethod(request)) {
+      return Single.just(HttpResponseData.BadRequest);
     }
+
+    Path path = rootDirectory.resolve(request.getPath()).normalize().toAbsolutePath();
+    if (!checkPath(path)) {
+      return Single.just(HttpResponseData.FileNotFound);
+    }
+
+    AuthorizationData authorizationData = request.getAuthorizationData();
+    if(!checkAuthorization(path, authorizationData)) {
+      return Single.just(HttpResponseData.Unauthorized);
+    }
+
     return reactiveCache.getResponseData(path);
+  }
+
+  private boolean checkMethod(IHttpRequest request) {
+    HttpMethod method = request.getHttpRequest().method();
+
+    return method.equals(HttpMethod.GET) || method.equals(HttpMethod.HEAD);
   }
 
   private boolean checkAuthorization(Path path, AuthorizationData provided) {

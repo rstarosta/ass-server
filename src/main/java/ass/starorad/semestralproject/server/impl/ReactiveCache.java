@@ -1,6 +1,5 @@
 package ass.starorad.semestralproject.server.impl;
 
-import ass.starorad.semestralproject.server.IHttpRequest;
 import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
@@ -40,6 +39,6 @@ public class ReactiveCache {
                 //cache.put(request.getKey(), new SoftReference<CachedFileResponse>(null))
             )
     )
-        .first(HttpResponseData.FileNotFoundResponse);
+        .first(HttpResponseData.FileNotFound);
   }
 }

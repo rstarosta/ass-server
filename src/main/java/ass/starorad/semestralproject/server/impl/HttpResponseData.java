@@ -7,21 +7,27 @@ import io.netty.handler.codec.http.HttpVersion;
 
 public class HttpResponseData {
 
-  public static HttpResponseData FileNotFoundResponse = new HttpResponseData(
+  public static HttpResponseData FileNotFound = new HttpResponseData(
       new DefaultHttpResponse(
           HttpVersion.HTTP_1_1,
           HttpResponseStatus.NOT_FOUND
       ));
 
-  public static HttpResponseData UnauthorizedResponse = new HttpResponseData(
+  public static HttpResponseData Unauthorized = new HttpResponseData(
         new DefaultHttpResponse(
             HttpVersion.HTTP_1_1,
             HttpResponseStatus.UNAUTHORIZED
         ));
 
   static {
-    UnauthorizedResponse.getHttpResponse().headers().add("WWW-Authenticate", "Basic");
+    Unauthorized.getHttpResponse().headers().add("WWW-Authenticate", "Basic");
   }
+  
+  public static HttpResponseData BadRequest = new HttpResponseData(
+      new DefaultHttpResponse(
+          HttpVersion.HTTP_1_1,
+          HttpResponseStatus.BAD_REQUEST
+      ));
 
   private HttpResponse httpResponse;
   private byte[] content;
