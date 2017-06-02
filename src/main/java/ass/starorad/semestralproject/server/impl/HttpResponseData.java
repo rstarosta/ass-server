@@ -14,10 +14,14 @@ public class HttpResponseData {
       ));
 
   public static HttpResponseData UnauthorizedResponse = new HttpResponseData(
-      new DefaultHttpResponse(
-          HttpVersion.HTTP_1_1,
-          HttpResponseStatus.UNAUTHORIZED
-      ));
+        new DefaultHttpResponse(
+            HttpVersion.HTTP_1_1,
+            HttpResponseStatus.UNAUTHORIZED
+        ));
+
+  static {
+    UnauthorizedResponse.getHttpResponse().headers().add("WWW-Authenticate", "Basic");
+  }
 
   private HttpResponse httpResponse;
   private byte[] content;
