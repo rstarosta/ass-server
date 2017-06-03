@@ -7,6 +7,12 @@ import io.netty.handler.codec.http.HttpVersion;
 
 public class HttpResponseData {
 
+  public static HttpResponseData Ok = new HttpResponseData(
+      new DefaultHttpResponse(
+          HttpVersion.HTTP_1_1,
+          HttpResponseStatus.OK
+      ));
+
   public static HttpResponseData FileNotFound = new HttpResponseData(
       new DefaultHttpResponse(
           HttpVersion.HTTP_1_1,

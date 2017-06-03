@@ -25,10 +25,6 @@ public class FileManager implements IFileManager {
   }
 
   public Single<HttpResponseData> getResponseData(IHttpRequest request) {
-    if(!checkMethod(request)) {
-      return Single.just(HttpResponseData.BadRequest);
-    }
-
     Path path = rootDirectory.resolve(request.getPath()).normalize().toAbsolutePath();
     if (!checkPath(path)) {
       return Single.just(HttpResponseData.FileNotFound);
@@ -39,13 +35,14 @@ public class FileManager implements IFileManager {
       return Single.just(HttpResponseData.Unauthorized);
     }
 
-    return reactiveCache.getResponseData(path);
-  }
-
-  private boolean checkMethod(IHttpRequest request) {
     HttpMethod method = request.getHttpRequest().method();
+    if(method.equals(HttpMethod.GET)) {
+      return reactiveCache.getResponseData(path);
+    } else if(method.equals(HttpMethod.HEAD)) {
+      return Single.just(HttpResponseData.Ok);
+    }
 
-    return method.equals(HttpMethod.GET) || method.equals(HttpMethod.HEAD);
+    return Single.just(HttpResponseData.BadRequest);
   }
 
   private boolean checkAuthorization(Path path, AuthorizationData provided) {
