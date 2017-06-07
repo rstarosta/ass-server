@@ -8,6 +8,7 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
+import java.nio.ByteBuffer;
 
 public class NettyResponseEncoder implements IHttpResponseEncoder {
 
@@ -27,7 +28,10 @@ public class NettyResponseEncoder implements IHttpResponseEncoder {
         content.resetReaderIndex();
       }
 
-      return new EncodedResponse(response.getClient(), byteBuf);
+      ByteBuffer byteBuffer = byteBuf.nioBuffer();
+      byteBuf.release();
+
+      return new EncodedResponse(response.getClient(), byteBuffer);
     });
   }
 }

@@ -2,12 +2,9 @@ package ass.starorad.semestralproject.server.impl;
 
 import ass.starorad.semestralproject.server.IResponse;
 import ass.starorad.semestralproject.server.IResponseWriter;
-import io.netty.buffer.ByteBuf;
-import io.reactivex.subscribers.DefaultSubscriber;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
@@ -126,7 +123,7 @@ public class SocketResponseWriter implements IResponseWriter, Runnable {
   @Override
   public void accept(IResponse t) throws Exception {
     System.out.println("Registering response for writing ..");
-    ByteBuffer dataToWrite = t.getResponseData().nioBuffer();
+    ByteBuffer dataToWrite = t.getResponseData();
     SocketChannel socketToWriteTo = t.getClient();
     bufferMap.put(socketToWriteTo, dataToWrite);
     queue.add(socketToWriteTo);
