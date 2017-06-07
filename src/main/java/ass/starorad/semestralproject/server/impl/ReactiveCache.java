@@ -10,7 +10,7 @@ import io.reactivex.Single;
 import java.lang.ref.SoftReference;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import javaslang.control.Try;
 
@@ -18,14 +18,14 @@ public class ReactiveCache {
 
   private ConcurrentHashMap<Path, SoftReference<HttpResponseData>> cache = new ConcurrentHashMap<>();
 
-  //TODO: Fix soft references, can return null
   public Single<HttpResponseData> getResponseData(Path path) {
     return Observable.concat(
         Observable.just(path)
             .filter(cache::containsKey)
             .map(cache::get)
-            .map(SoftReference::get)
-            .filter(Objects::nonNull),
+            .map(softReference -> Optional.ofNullable(softReference.get()))
+            .filter(Optional::isPresent)
+            .map(Optional::get),
         Observable.just(path)
             .map(p -> Try.of(() -> Files.readAllBytes(p)))
             .filter(Try::isSuccess)
@@ -35,10 +35,8 @@ public class ReactiveCache {
                 Unpooled.wrappedBuffer(bytes)
             ))
             .doOnNext(responseData ->
-                    cache.put(path, new SoftReference<HttpResponseData>(responseData))
-                //cache.put(request.getKey(), new SoftReference<CachedFileResponse>(null))
+                cache.put(path, new SoftReference<HttpResponseData>(responseData))
             )
-    )
-        .first(HttpResponseData.FileNotFound);
+    ).first(HttpResponseData.FileNotFound);
   }
 }
