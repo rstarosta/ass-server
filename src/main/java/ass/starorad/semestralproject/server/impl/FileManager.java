@@ -3,7 +3,6 @@ package ass.starorad.semestralproject.server.impl;
 import ass.starorad.semestralproject.server.IFileManager;
 import ass.starorad.semestralproject.server.IHttpRequest;
 import ass.starorad.semestralproject.server.IHttpResponse;
-import com.sun.xml.internal.messaging.saaj.packaging.mime.internet.ParseException;
 import io.netty.handler.codec.http.HttpMethod;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
@@ -58,7 +57,7 @@ public class FileManager implements IFileManager {
       e.printStackTrace();
       // unable to read htaccess, rather don't serve the file
       return false;
-    } catch(ParseException e) {
+    } catch(HtaccessParseException e) {
       e.printStackTrace();
       // htaccess is in wrong format
       return false;
@@ -93,7 +92,7 @@ public class FileManager implements IFileManager {
     return null;
   }
 
-  private AuthorizationData getAuthorizationDataFromHtaccess(Path path) throws IOException, ParseException {
+  private AuthorizationData getAuthorizationDataFromHtaccess(Path path) throws IOException, HtaccessParseException {
     return Files.lines(path)
         .filter(line -> !line.isEmpty())
         .findFirst()
@@ -101,7 +100,7 @@ public class FileManager implements IFileManager {
         .map(parts -> Try.of(() -> new AuthorizationData(parts[0], parts[1])))
         .filter(Try::isSuccess)
         .map(Try::get)
-        .orElseThrow(ParseException::new);
+        .orElseThrow(HtaccessParseException::new);
   }
 
   private boolean isInRootDirectory(Path path) {
