@@ -5,6 +5,8 @@ import ass.starorad.semestralproject.server.IRawRequest;
 import ass.starorad.semestralproject.server.IRequestHandler;
 import ass.starorad.semestralproject.server.IResponseWriter;
 import ass.starorad.semestralproject.server.IServer;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.PublishSubject;
@@ -20,6 +22,7 @@ import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Server implements IServer {
 
@@ -30,7 +33,7 @@ public class Server implements IServer {
   protected boolean exit = false;
 
   private ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
-  private Map<SocketChannel, ByteArrayOutputStream> attachments = new HashMap<>();
+  private Map<SocketChannel, ByteBuf> buffers = new ConcurrentHashMap<>();
 
   /*
    * Use RxJava Subject
@@ -120,21 +123,20 @@ public class Server implements IServer {
         .filter(SelectionKey::isReadable)
         .forEach(key -> {
           SocketChannel socketChannel = (SocketChannel) key.channel();
-          ByteArrayOutputStream byteArrayOutputStream = getOrCreateMessageBuilder(socketChannel);
+          ByteBuf byteBuf = getOrCreateMessageBuilder(socketChannel);
 
           byte[] bytes =  ByteBufferUtil.readFromChannel(byteBuffer, socketChannel);
-          byteArrayOutputStream.write(bytes);
+          byteBuf.writeBytes(bytes);
 
           if(byteArrayEndsWith(bytes, delimiter)) {
-            requests.onNext(new ClientRequest(socketChannel, byteArrayOutputStream.toByteArray()));
-            byteArrayOutputStream.close();
-            attachments.remove(socketChannel);
+            requests.onNext(new ClientRequest(socketChannel, byteBuf));
+            buffers.remove(socketChannel);
           }
         }).dispose();
     }
 
-  private ByteArrayOutputStream getOrCreateMessageBuilder(SocketChannel socketChannel) {
-    return attachments.computeIfAbsent(socketChannel, c -> new ByteArrayOutputStream());
+  private ByteBuf getOrCreateMessageBuilder(SocketChannel socketChannel) {
+    return buffers.computeIfAbsent(socketChannel, c -> Unpooled.buffer(1024));
   }
 
   private boolean byteArrayEndsWith(byte[] bytes, String string) {

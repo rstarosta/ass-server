@@ -1,14 +1,15 @@
 package ass.starorad.semestralproject.server.impl;
 
+import io.netty.buffer.ByteBuf;
 import java.nio.channels.SocketChannel;
 
 import ass.starorad.semestralproject.server.IResponse;
 
 public class EncodedResponse implements IResponse {
 	protected SocketChannel client;
-	protected byte[] responseData;
+	protected ByteBuf responseData;
 	
-	public EncodedResponse(SocketChannel client, byte[] responseData) {
+	public EncodedResponse(SocketChannel client, ByteBuf responseData) {
 		this.client = client;
 		this.responseData = responseData;
 	}
@@ -17,7 +18,7 @@ public class EncodedResponse implements IResponse {
 		return client;
 	}
 	
-	public byte[] getResponseData() {
+	public ByteBuf getResponseData() {
 		return responseData;
 	}
 }

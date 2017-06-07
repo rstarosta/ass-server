@@ -2,6 +2,7 @@ package ass.starorad.semestralproject.server.impl;
 
 import ass.starorad.semestralproject.server.IResponse;
 import ass.starorad.semestralproject.server.IResponseWriter;
+import io.netty.buffer.ByteBuf;
 import io.reactivex.subscribers.DefaultSubscriber;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -22,6 +23,7 @@ public class SocketResponseWriter implements IResponseWriter, Runnable {
   // elements are inserted from other thread
   protected ConcurrentLinkedQueue<SocketChannel> queue = new ConcurrentLinkedQueue<>();
   protected Map<SocketChannel, ByteBuffer> bufferMap = new ConcurrentHashMap<>();
+
   protected final Selector selector;
 
   private boolean exit = false;
@@ -124,7 +126,7 @@ public class SocketResponseWriter implements IResponseWriter, Runnable {
   @Override
   public void accept(IResponse t) throws Exception {
     System.out.println("Registering response for writing ..");
-    ByteBuffer dataToWrite = ByteBuffer.wrap(t.getResponseData());
+    ByteBuffer dataToWrite = t.getResponseData().nioBuffer();
     SocketChannel socketToWriteTo = t.getClient();
     bufferMap.put(socketToWriteTo, dataToWrite);
     queue.add(socketToWriteTo);

@@ -1,5 +1,7 @@
 package ass.starorad.semestralproject.server.impl;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
@@ -28,12 +30,10 @@ public class ReactiveCache {
             .map(p -> Try.of(() -> Files.readAllBytes(p)))
             .filter(Try::isSuccess)
             .map(Try::get)
-            .map(bytes ->
-                new HttpResponseData(
-                    new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK),
-                    bytes
-                )
-            )
+            .map(bytes -> new HttpResponseData(
+                new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK),
+                Unpooled.wrappedBuffer(bytes)
+            ))
             .doOnNext(responseData ->
                     cache.put(path, new SoftReference<HttpResponseData>(responseData))
                 //cache.put(request.getKey(), new SoftReference<CachedFileResponse>(null))

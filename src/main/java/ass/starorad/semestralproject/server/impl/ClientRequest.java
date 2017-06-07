@@ -1,13 +1,14 @@
 package ass.starorad.semestralproject.server.impl;
 
 import ass.starorad.semestralproject.server.IRawRequest;
+import io.netty.buffer.ByteBuf;
 import java.nio.channels.SocketChannel;
 
 public class ClientRequest implements IRawRequest {
 	protected SocketChannel client;
-	protected byte[] requestData;
+	protected ByteBuf requestData;
 
-	public ClientRequest(SocketChannel clientAddress, byte[] requestData) {
+	public ClientRequest(SocketChannel clientAddress, ByteBuf requestData) {
 		this.client = clientAddress;
 		this.requestData = requestData;
 	}
@@ -16,12 +17,7 @@ public class ClientRequest implements IRawRequest {
 		return client;
 	}
 
-	public byte[] getRequestData() {
+	public ByteBuf getRequestData() {
 		return requestData;
-	}
-
-	@Override
-	public String toString() {
-		return "ClientRequest [clientAddress=" + client + ", requestData=" + requestData + "]";
 	}
 }

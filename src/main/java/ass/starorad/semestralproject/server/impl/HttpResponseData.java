@@ -1,5 +1,9 @@
 package ass.starorad.semestralproject.server.impl;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.EmptyByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -36,23 +40,23 @@ public class HttpResponseData {
       ));
 
   private HttpResponse httpResponse;
-  private byte[] content;
+  private ByteBuf content;
 
-  public HttpResponseData(HttpResponse httpResponse, byte[] content) {
+  public HttpResponseData(HttpResponse httpResponse, ByteBuf content) {
     this.httpResponse = httpResponse;
     this.content = content;
   }
 
   public HttpResponseData(HttpResponse httpResponse) {
     this.httpResponse = httpResponse;
-    this.content = null;
+    this.content = new EmptyByteBuf(UnpooledByteBufAllocator.DEFAULT);
   }
 
   public HttpResponse getHttpResponse() {
     return httpResponse;
   }
 
-  public byte[] getContent() {
+  public ByteBuf getContent() {
     return content;
   }
 }
