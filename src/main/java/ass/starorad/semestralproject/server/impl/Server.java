@@ -8,7 +8,9 @@ import ass.starorad.semestralproject.server.IServer;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.reactivex.Observable;
+import io.reactivex.Scheduler;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.PublishSubject;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -23,6 +25,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class Server implements IServer {
 
@@ -32,8 +38,9 @@ public class Server implements IServer {
   protected SocketAddress address;
   protected boolean exit = false;
 
-  private ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
+  private ByteBuffer byteBuffer = ByteBuffer.allocate(8096);
   private Map<SocketChannel, ByteBuf> buffers = new ConcurrentHashMap<>();
+  private ExecutorService executorService = Executors.newFixedThreadPool(30);
 
   /*
    * Use RxJava Subject
@@ -60,7 +67,10 @@ public class Server implements IServer {
 
     // use compose operator on RxJava Observable requests to handle requests using provided handler
     // use response writer to write response to client
-    Disposable handlerDisposable = requests.compose(handler).subscribe(writer);
+    Disposable handlerDisposable = requests
+        .subscribeOn(Schedulers.from(executorService))
+        .compose(handler)
+        .subscribe(writer);
 
     // start non-blocking loop
     while (!exit) {
