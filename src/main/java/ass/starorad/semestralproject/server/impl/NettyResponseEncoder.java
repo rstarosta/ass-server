@@ -24,6 +24,7 @@ public class NettyResponseEncoder implements IHttpResponseEncoder {
 
       if(content != null) {
         byteBuf.writeBytes(content);
+        content.resetReaderIndex();
       }
 
       return new EncodedResponse(response.getClient(), byteBuf);
