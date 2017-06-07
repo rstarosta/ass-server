@@ -44,6 +44,7 @@ public class ParsedHttpRequest implements IHttpRequest {
       path = URLDecoder.decode(request.uri(), "UTF-8");
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();
+      return null;
     }
 
     int paramIndex = path.indexOf('?');
@@ -80,7 +81,9 @@ public class ParsedHttpRequest implements IHttpRequest {
 
         String hashedPassword = hashPassword(parts[1], Salt, HashingAlgorithm);
         return new AuthorizationData(parts[0], hashedPassword);
-      } catch (UnsupportedEncodingException | IndexOutOfBoundsException e) {
+      } catch (NoSuchAlgorithmException e) {
+        e.printStackTrace();
+      } catch (UnsupportedEncodingException e) {
         e.printStackTrace();
       }
     }
@@ -89,22 +92,15 @@ public class ParsedHttpRequest implements IHttpRequest {
   }
 
   //TODO: Move into helper class?
-  public static String hashPassword(String password, String salt, String algorithm) {
-    try {
+  public static String hashPassword(String password, String salt, String algorithm)
+      throws UnsupportedEncodingException, NoSuchAlgorithmException {
       MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
       Base64.Encoder enc = Base64.getEncoder();
 
-      messageDigest.update(password.getBytes());
-      messageDigest.update(salt.getBytes());
+      messageDigest.update(password.getBytes("UTF-8"));
+      messageDigest.update(salt.getBytes("UTF-8"));
       byte[] hash = messageDigest.digest();
 
       return enc.encodeToString(hash);
-    } catch (NoSuchAlgorithmException e) {
-      throw new IllegalArgumentException("Not a valid encryption algorithm", e);
-    }
-  }
-
-  public static void main(String[] args) {
-    System.out.println(hashPassword("123456", Salt, HashingAlgorithm));
   }
 }

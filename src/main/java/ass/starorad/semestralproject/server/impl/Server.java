@@ -6,9 +6,11 @@ import ass.starorad.semestralproject.server.IRequestHandler;
 import ass.starorad.semestralproject.server.IResponseWriter;
 import ass.starorad.semestralproject.server.IServer;
 import io.reactivex.Observable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.PublishSubject;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
@@ -55,7 +57,7 @@ public class Server implements IServer {
 
     // use compose operator on RxJava Observable requests to handle requests using provided handler
     // use response writer to write response to client
-    requests.compose(handler).subscribe(writer);
+    Disposable handlerDisposable = requests.compose(handler).subscribe(writer);
 
     // start non-blocking loop
     while (!exit) {
@@ -66,6 +68,11 @@ public class Server implements IServer {
     }
 
     serverChannel.close();
+    handlerDisposable.dispose();
+  }
+
+  public void shutdown() {
+    exit = true;
   }
 
   private Observable<SelectionKey> selectValidKeys(Selector sel) throws IOException {
@@ -89,12 +96,14 @@ public class Server implements IServer {
   // 2) clientChannel.configureBlocking(false);
   // 3) clientChannel.register(selector, SelectionKey.OP_READ);
   private void acceptAndRegister(Selector sel, Observable<SelectionKey> validKeys) {
-    validKeys.filter(SelectionKey::isAcceptable)
+   validKeys
+        .filter(SelectionKey::isValid)
+        .filter(SelectionKey::isAcceptable)
         .forEach(key -> {
           SocketChannel clientChannel = ((ServerSocketChannel) key.channel()).accept();
           clientChannel.configureBlocking(false);
           clientChannel.register(sel, SelectionKey.OP_READ);
-        });
+        }).dispose();
   }
 
   // 1) (SocketChannel)key.channel() on readable key
@@ -106,7 +115,9 @@ public class Server implements IServer {
   // 5) emit request object into observable
   //	(hint: using PublishSubject is convenient)
   private void readAndBuildRequests(String delimiter, Observable<SelectionKey> validKeys) {
-    validKeys.filter(SelectionKey::isReadable)
+    validKeys
+        .filter(SelectionKey::isValid)
+        .filter(SelectionKey::isReadable)
         .forEach(key -> {
           SocketChannel socketChannel = (SocketChannel) key.channel();
           ByteArrayOutputStream byteArrayOutputStream = getOrCreateMessageBuilder(socketChannel);
@@ -116,9 +127,10 @@ public class Server implements IServer {
 
           if(byteArrayEndsWith(bytes, delimiter)) {
             requests.onNext(new ClientRequest(socketChannel, byteArrayOutputStream.toByteArray()));
+            byteArrayOutputStream.close();
             attachments.remove(socketChannel);
           }
-        });
+        }).dispose();
     }
 
   private ByteArrayOutputStream getOrCreateMessageBuilder(SocketChannel socketChannel) {
@@ -130,7 +142,13 @@ public class Server implements IServer {
       return false;
     }
 
-    byte[] end = string.getBytes();
+    byte[] end;
+    try {
+      end = string.getBytes("UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      e.printStackTrace();
+      return false;
+    }
     for(int i = 0; i < end.length; i++) {
       if(bytes[bytes.length - 1 - i] != end[end.length - 1 - i]) {
         return false;
