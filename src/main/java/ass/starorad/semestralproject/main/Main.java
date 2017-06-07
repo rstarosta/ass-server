@@ -4,6 +4,7 @@ import ass.starorad.semestralproject.server.impl.NettyRequestParser;
 import ass.starorad.semestralproject.server.impl.NettyResponseEncoder;
 import ass.starorad.semestralproject.server.impl.ReactiveCache;
 import ass.starorad.semestralproject.server.impl.FileManager;
+import ass.starorad.semestralproject.server.impl.SocketResponseWriter;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
@@ -41,7 +42,7 @@ public class Main {
                 new ReactiveCache()
             )
         ),
-        new ResponseWriter(),
+        new SocketResponseWriter(),
         "\r\n"
     );
   }
