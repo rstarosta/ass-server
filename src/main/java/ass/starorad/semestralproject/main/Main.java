@@ -1,17 +1,18 @@
 package ass.starorad.semestralproject.main;
 
-import ass.starorad.semestralproject.server.impl.NettyRequestParser;
-import ass.starorad.semestralproject.server.impl.NettyResponseEncoder;
-import ass.starorad.semestralproject.server.impl.ReactiveCache;
-import ass.starorad.semestralproject.server.impl.FileManager;
-import ass.starorad.semestralproject.server.impl.SocketResponseWriter;
+import ass.starorad.semestralproject.server.IFileManager;
+import ass.starorad.semestralproject.server.IHttpRequestParser;
+import ass.starorad.semestralproject.server.IHttpResponseEncoder;
+import ass.starorad.semestralproject.server.IRequest;
+import ass.starorad.semestralproject.server.IRequestHandler;
+import ass.starorad.semestralproject.server.IResponseWriter;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
 import ass.starorad.semestralproject.server.IServer;
 import ass.starorad.semestralproject.server.impl.RequestHandler;
-import ass.starorad.semestralproject.server.impl.ResponseWriter;
-import ass.starorad.semestralproject.server.impl.Server;
 
 
 public class Main {
@@ -32,17 +33,15 @@ public class Main {
       documentRoot = args[1];
     }
 
-    IServer server = new Server(new InetSocketAddress("localhost", port));
+    Injector injector = Guice.createInjector(new ServerModule(new InetSocketAddress("localhost", port), documentRoot));
+
+    IServer server = injector.getInstance(IServer.class);
+    IRequestHandler requestHandler = injector.getInstance(IRequestHandler.class);
+    IResponseWriter responseWriter = injector.getInstance(IResponseWriter.class);
+
     server.run(
-        new RequestHandler(
-            new NettyRequestParser(),
-            new NettyResponseEncoder(),
-            new FileManager(
-                documentRoot,
-                new ReactiveCache()
-            )
-        ),
-        new SocketResponseWriter(),
+        requestHandler,
+        responseWriter,
         "\r\n"
     );
   }

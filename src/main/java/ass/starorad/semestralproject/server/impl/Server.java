@@ -5,14 +5,14 @@ import ass.starorad.semestralproject.server.IRawRequest;
 import ass.starorad.semestralproject.server.IRequestHandler;
 import ass.starorad.semestralproject.server.IResponseWriter;
 import ass.starorad.semestralproject.server.IServer;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.reactivex.Observable;
-import io.reactivex.Scheduler;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.PublishSubject;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketAddress;
@@ -21,14 +21,11 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 public class Server implements IServer {
 
@@ -48,7 +45,8 @@ public class Server implements IServer {
    */
   protected PublishSubject<IRawRequest> requests = PublishSubject.create();
 
-  public Server(SocketAddress address) {
+  @Inject
+  public Server(@Named("Socket address") SocketAddress address) {
     this.address = address;
   }
 

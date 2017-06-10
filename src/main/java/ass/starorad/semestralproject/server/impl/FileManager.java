@@ -3,6 +3,8 @@ package ass.starorad.semestralproject.server.impl;
 import ass.starorad.semestralproject.server.IFileManager;
 import ass.starorad.semestralproject.server.IHttpRequest;
 import ass.starorad.semestralproject.server.IHttpResponse;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import io.netty.handler.codec.http.HttpMethod;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
@@ -18,7 +20,8 @@ public class FileManager implements IFileManager {
   private Path rootDirectory;
   private ReactiveCache reactiveCache;
 
-  public FileManager(String rootDirectoryPath, ReactiveCache reactiveCache) {
+  @Inject
+  public FileManager(@Named("Document root") String rootDirectoryPath, ReactiveCache reactiveCache) {
     setRootDirectoryFromPath(rootDirectoryPath);
     this.reactiveCache = reactiveCache;
   }
