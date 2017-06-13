@@ -5,6 +5,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.fail;
 
 import ass.starorad.semestralproject.server.IHttpRequest;
 import ass.starorad.semestralproject.server.IRequest;
@@ -19,6 +20,7 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -60,11 +62,7 @@ public class FileManagerTest {
 
   @Test
   public void testSimpleRequest() {
-    HttpRequest httpRequest = mock(HttpRequest.class);
-    when(httpRequest.uri()).thenReturn("/home/index.html");
-    when(httpRequest.headers()).thenReturn(emptyHeaders);
-    when(httpRequest.method()).thenReturn(HttpMethod.GET);
-
+    HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/home/index.html");
     IHttpRequest request = new ParsedHttpRequest(null, httpRequest);
 
     fileManager.getResponseData(request);
@@ -74,10 +72,7 @@ public class FileManagerTest {
 
   @Test
   public void testSimpleRequestToNonexistantFile() {
-    HttpRequest httpRequest = mock(HttpRequest.class);
-    when(httpRequest.uri()).thenReturn("/meh");
-    when(httpRequest.headers()).thenReturn(emptyHeaders);
-    when(httpRequest.method()).thenReturn(HttpMethod.GET);
+    HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/meh");
 
     IHttpRequest request = new ParsedHttpRequest(null, httpRequest);
     fileManager.getResponseData(request);
@@ -88,10 +83,7 @@ public class FileManagerTest {
 
   @Test
   public void testSimpleRequestToWrongDirectory() {
-    HttpRequest httpRequest = mock(HttpRequest.class);
-    when(httpRequest.uri()).thenReturn("/../secret");
-    when(httpRequest.headers()).thenReturn(emptyHeaders);
-    when(httpRequest.method()).thenReturn(HttpMethod.GET);
+    HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/../secret");
 
     IHttpRequest request = new ParsedHttpRequest(null, httpRequest);
     HttpResponseData data = fileManager.getResponseData(request).blockingGet();
@@ -102,10 +94,7 @@ public class FileManagerTest {
 
   @Test
   public void testSimpleRequestWithWalks() {
-    HttpRequest httpRequest = mock(HttpRequest.class);
-    when(httpRequest.uri()).thenReturn("/src/main/../../home/index.html");
-    when(httpRequest.headers()).thenReturn(emptyHeaders);
-    when(httpRequest.method()).thenReturn(HttpMethod.GET);
+    HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/src/main/../../home/index.html");
 
     IHttpRequest request = new ParsedHttpRequest(null, httpRequest);
     fileManager.getResponseData(request);
@@ -115,10 +104,7 @@ public class FileManagerTest {
 
   @Test
   public void testSimpleRequestToProtectedDirectory() {
-    HttpRequest httpRequest = mock(HttpRequest.class);
-    when(httpRequest.uri()).thenReturn("/home/secureFolder/secure.html");
-    when(httpRequest.headers()).thenReturn(emptyHeaders);
-    when(httpRequest.method()).thenReturn(HttpMethod.GET);
+    HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/home/secureFolder/secure.html");
 
     IHttpRequest request = new ParsedHttpRequest(null, httpRequest);
     HttpResponseData data = fileManager.getResponseData(request).blockingGet();
@@ -129,10 +115,14 @@ public class FileManagerTest {
 
   @Test
   public void testAuthenticatedRequestToProtectedDirectory() {
-    HttpRequest httpRequest = mock(HttpRequest.class);
-    when(httpRequest.uri()).thenReturn("/home/secureFolder/secure.html");
-    when(httpRequest.headers()).thenReturn(correctAuthHeaders);
-    when(httpRequest.method()).thenReturn(HttpMethod.GET);
+    HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/home/secureFolder/secure.html");
+    String auth = "test:123456";
+    try {
+      httpRequest.headers().add("Authorization", "Basic " + Base64.getEncoder().encodeToString(auth.getBytes("UTF-8")));
+    } catch (UnsupportedEncodingException e) {
+      e.printStackTrace();
+      fail();
+    }
 
     IHttpRequest request = new ParsedHttpRequest(null, httpRequest);
     fileManager.getResponseData(request);
@@ -143,10 +133,14 @@ public class FileManagerTest {
 
   @Test
   public void testWrongAuthenticatedRequestToProtectedDirectory() {
-    HttpRequest httpRequest = mock(HttpRequest.class);
-    when(httpRequest.uri()).thenReturn("/home/secureFolder/secure.html");
-    when(httpRequest.headers()).thenReturn(wrongAuthHeaders);
-    when(httpRequest.method()).thenReturn(HttpMethod.GET);
+    HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/home/secureFolder/secure.html");
+    String auth = "test:asdf";
+    try {
+      httpRequest.headers().add("Authorization", "Basic " + Base64.getEncoder().encodeToString(auth.getBytes("UTF-8")));
+    } catch (UnsupportedEncodingException e) {
+      e.printStackTrace();
+      fail();
+    }
 
     IHttpRequest request = new ParsedHttpRequest(null, httpRequest);
     HttpResponseData data = fileManager.getResponseData(request).blockingGet();
