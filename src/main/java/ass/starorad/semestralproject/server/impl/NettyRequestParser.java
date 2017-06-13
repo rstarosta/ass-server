@@ -13,10 +13,14 @@ import io.reactivex.ObservableSource;
 
 public class NettyRequestParser implements IHttpRequestParser {
 
+  private static int MaxInitialLineLength = 8192;
+  private static int MaxHeaderSize = 8192;
+  private static int MaxChunkSize = 8192;
+
   @Override
   public ObservableSource<IHttpRequest> apply(Observable<IRawRequest> observable) {
     return observable.map(request -> {
-      EmbeddedChannel ch = new EmbeddedChannel(new HttpRequestDecoder(8192, 8192, 8192));
+      EmbeddedChannel ch = new EmbeddedChannel(new HttpRequestDecoder(MaxInitialLineLength, MaxHeaderSize, MaxChunkSize));
 
       ByteBuf byteBuf = request.getRequestData();
       ch.writeInbound(byteBuf);
