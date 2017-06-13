@@ -1,6 +1,6 @@
 package ass.starorad.semestralproject.server.impl;
 
-import ass.starorad.semestralproject.server.ByteBufferUtil;
+import ass.starorad.semestralproject.server.ByteArrayUtil;
 import ass.starorad.semestralproject.server.IRawRequest;
 import ass.starorad.semestralproject.server.IRequestHandler;
 import ass.starorad.semestralproject.server.IResponseWriter;
@@ -14,7 +14,6 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.PublishSubject;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
@@ -118,7 +117,7 @@ public class Server implements IServer {
   }
 
   // 1) (SocketChannel)key.channel() on readable key
-  // 2) read from channel (you can use ByteBufferUtil)
+  // 2) read from channel (you can use ByteArrayUtil)
   // 3) append data to some kind of buffer (ByteBuffer, ByteArrayOutputStream, StringBuilder, ...)
   //		this might have tremendous impact on performance, but beware of premature optimization
   //		note that speed is not primary objective of this homework
@@ -135,7 +134,7 @@ public class Server implements IServer {
 
           byte[] bytes;
           try {
-            bytes = ByteBufferUtil.readFromChannel(byteBuffer, socketChannel);
+            bytes = ByteArrayUtil.readFromChannel(byteBuffer, socketChannel);
             byteBuf.writeBytes(bytes);
           } catch (IOException e) {
             e.printStackTrace();
@@ -145,7 +144,7 @@ public class Server implements IServer {
             return;
           }
 
-          if(byteArrayEndsWith(bytes, delimiter)) {
+          if(ByteArrayUtil.endsWith(bytes, delimiter)) {
             requests.onNext(new ClientRequest(socketChannel, byteBuf));
             buffers.remove(socketChannel);
           }
@@ -156,24 +155,4 @@ public class Server implements IServer {
     return buffers.computeIfAbsent(socketChannel, c -> Unpooled.buffer(1024));
   }
 
-  private boolean byteArrayEndsWith(byte[] bytes, String string) {
-    if(string == null || bytes.length < string.length()) {
-      return false;
-    }
-
-    byte[] end;
-    try {
-      end = string.getBytes("UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      e.printStackTrace();
-      return false;
-    }
-    for(int i = 0; i < end.length; i++) {
-      if(bytes[bytes.length - 1 - i] != end[end.length - 1 - i]) {
-        return false;
-      }
-    }
-
-    return true;
-  }
 }

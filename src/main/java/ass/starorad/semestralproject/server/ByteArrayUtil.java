@@ -1,11 +1,11 @@
 package ass.starorad.semestralproject.server;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
-public class ByteBufferUtil {
+public class ByteArrayUtil {
 	
 	/**
 	 * @param buffer - preallocated buffer with suitable size; allocate with ByteBuffer.allocate() or ByteBuffer.allocateDirect()
@@ -46,4 +46,24 @@ public class ByteBufferUtil {
 		return bytes;
 	}
 
+	public static boolean endsWith(byte[] bytes, String string) {
+		if(string == null || bytes.length < string.length()) {
+			return false;
+		}
+
+		byte[] end;
+		try {
+			end = string.getBytes("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			return false;
+		}
+		for(int i = 0; i < end.length; i++) {
+			if(bytes[bytes.length - 1 - i] != end[end.length - 1 - i]) {
+				return false;
+			}
+		}
+
+		return true;
+	}
 }
