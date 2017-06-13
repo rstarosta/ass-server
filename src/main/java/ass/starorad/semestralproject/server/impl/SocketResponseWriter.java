@@ -56,6 +56,7 @@ public class SocketResponseWriter implements IResponseWriter, Runnable {
         selector.select();
       } catch (IOException e) {
         e.printStackTrace();
+        continue;
       }
 
       Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
@@ -67,6 +68,7 @@ public class SocketResponseWriter implements IResponseWriter, Runnable {
         // TODO check that key is readable and valid and stuff
         if (!selKey.isValid() || !selKey.isWritable()) {
           System.out.println("Well shit");
+          selKey.cancel();
           iterator.remove();
           continue;
         }

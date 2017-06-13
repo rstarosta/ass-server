@@ -133,8 +133,17 @@ public class Server implements IServer {
           SocketChannel socketChannel = (SocketChannel) key.channel();
           ByteBuf byteBuf = getOrCreateMessageBuilder(socketChannel);
 
-          byte[] bytes =  ByteBufferUtil.readFromChannel(byteBuffer, socketChannel);
-          byteBuf.writeBytes(bytes);
+          byte[] bytes;
+          try {
+            bytes = ByteBufferUtil.readFromChannel(byteBuffer, socketChannel);
+            byteBuf.writeBytes(bytes);
+          } catch (IOException e) {
+            e.printStackTrace();
+            buffers.remove(socketChannel);
+            byteBuf.release();
+            key.cancel();
+            return;
+          }
 
           if(byteArrayEndsWith(bytes, delimiter)) {
             requests.onNext(new ClientRequest(socketChannel, byteBuf));
