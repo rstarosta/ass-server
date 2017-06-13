@@ -3,17 +3,14 @@ package ass.starorad.semestralproject.main;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
 
 import ass.starorad.semestralproject.server.IHttpRequest;
-import ass.starorad.semestralproject.server.IRequest;
 import ass.starorad.semestralproject.server.impl.FileManager;
 import ass.starorad.semestralproject.server.impl.HttpResponseData;
 import ass.starorad.semestralproject.server.impl.ParsedHttpRequest;
 import ass.starorad.semestralproject.server.impl.ReactiveCache;
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.DefaultHttpRequest;
 import io.netty.handler.codec.http.HttpHeaders;
@@ -23,7 +20,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Base64;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -71,6 +67,17 @@ public class FileManagerTest {
   }
 
   @Test
+  public void testSimpleHeadRequest() {
+    HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.HEAD, "/home/index.html");
+    IHttpRequest request = new ParsedHttpRequest(null, httpRequest);
+
+    HttpResponseData data = fileManager.getResponseData(request).blockingGet();
+
+    verify(reactiveCache, never()).getResponseData(Paths.get("home/index.html").toAbsolutePath());
+    assertEquals(data.getHttpResponse().status(), HttpResponseStatus.OK);
+  }
+
+  @Test
   public void testSimpleRequestToNonexistantFile() {
     HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/meh");
 
@@ -90,6 +97,17 @@ public class FileManagerTest {
 
     verify(reactiveCache, never()).getResponseData(Paths.get("../secret").toAbsolutePath());
     assertEquals(data.getHttpResponse().status(), HttpResponseStatus.NOT_FOUND);
+  }
+
+  @Test
+  public void testWrongRequestType() {
+    HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.PUT, "/home/index.html");
+    IHttpRequest request = new ParsedHttpRequest(null, httpRequest);
+
+    HttpResponseData data = fileManager.getResponseData(request).blockingGet();
+
+    verify(reactiveCache, never()).getResponseData(Paths.get("home/index.html").toAbsolutePath());
+    assertEquals(data.getHttpResponse().status(), HttpResponseStatus.BAD_REQUEST);
   }
 
   @Test
