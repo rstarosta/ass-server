@@ -1,10 +1,6 @@
-package ass.starorad.semestralproject.server.impl;
+package ass.starorad.semestralproject.server.data.impl;
 
-import ass.starorad.semestralproject.server.IHttpResponse;
-import io.netty.handler.codec.http.DefaultHttpResponse;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpVersion;
+import ass.starorad.semestralproject.server.data.IHttpResponse;
 import java.nio.channels.SocketChannel;
 
 public class CachedHttpResponse implements IHttpResponse {

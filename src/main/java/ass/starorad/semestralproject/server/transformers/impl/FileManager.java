@@ -1,8 +1,13 @@
-package ass.starorad.semestralproject.server.impl;
+package ass.starorad.semestralproject.server.transformers.impl;
 
-import ass.starorad.semestralproject.server.IFileManager;
-import ass.starorad.semestralproject.server.IHttpRequest;
-import ass.starorad.semestralproject.server.IHttpResponse;
+import ass.starorad.semestralproject.server.data.impl.AuthorizationData;
+import ass.starorad.semestralproject.server.data.impl.CachedHttpResponse;
+import ass.starorad.semestralproject.server.data.impl.HtaccessParseException;
+import ass.starorad.semestralproject.server.data.impl.HttpResponseData;
+import ass.starorad.semestralproject.server.transformers.IFileManager;
+import ass.starorad.semestralproject.server.data.IHttpRequest;
+import ass.starorad.semestralproject.server.data.IHttpResponse;
+import ass.starorad.semestralproject.server.util.AuthorizationUtil;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import io.netty.handler.codec.http.HttpMethod;

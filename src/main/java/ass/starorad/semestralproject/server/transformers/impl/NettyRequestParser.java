@@ -1,10 +1,10 @@
-package ass.starorad.semestralproject.server.impl;
+package ass.starorad.semestralproject.server.transformers.impl;
 
-import ass.starorad.semestralproject.server.IHttpRequest;
-import ass.starorad.semestralproject.server.IHttpRequestParser;
-import ass.starorad.semestralproject.server.IRawRequest;
+import ass.starorad.semestralproject.server.data.IHttpRequest;
+import ass.starorad.semestralproject.server.data.impl.ParsedHttpRequest;
+import ass.starorad.semestralproject.server.transformers.IHttpRequestParser;
+import ass.starorad.semestralproject.server.data.IRawRequest;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpRequestDecoder;

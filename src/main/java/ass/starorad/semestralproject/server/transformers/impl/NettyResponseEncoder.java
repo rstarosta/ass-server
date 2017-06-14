@@ -1,8 +1,9 @@
-package ass.starorad.semestralproject.server.impl;
+package ass.starorad.semestralproject.server.transformers.impl;
 
-import ass.starorad.semestralproject.server.IHttpResponse;
-import ass.starorad.semestralproject.server.IHttpResponseEncoder;
-import ass.starorad.semestralproject.server.IResponse;
+import ass.starorad.semestralproject.server.data.IHttpResponse;
+import ass.starorad.semestralproject.server.data.impl.EncodedResponse;
+import ass.starorad.semestralproject.server.transformers.IHttpResponseEncoder;
+import ass.starorad.semestralproject.server.data.IRawResponse;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.HttpResponseEncoder;
@@ -17,7 +18,7 @@ public class NettyResponseEncoder implements IHttpResponseEncoder {
   private static final Logger logger = LoggerFactory.getLogger(NettyResponseEncoder.class);
 
   @Override
-  public ObservableSource<IResponse> apply(Observable<IHttpResponse> observable) {
+  public ObservableSource<IRawResponse> apply(Observable<IHttpResponse> observable) {
     return observable.map(response -> {
       EmbeddedChannel ch = new EmbeddedChannel(new HttpResponseEncoder());
 

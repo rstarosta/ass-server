@@ -1,5 +1,6 @@
-package ass.starorad.semestralproject.server.impl;
+package ass.starorad.semestralproject.server.util;
 
+import ass.starorad.semestralproject.server.data.impl.AuthorizationData;
 import io.netty.handler.codec.http.HttpRequest;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;

@@ -1,6 +1,6 @@
-package ass.starorad.semestralproject.server.impl;
+package ass.starorad.semestralproject.server.transformers.impl;
 
-import io.netty.buffer.ByteBuf;
+import ass.starorad.semestralproject.server.data.impl.HttpResponseData;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;

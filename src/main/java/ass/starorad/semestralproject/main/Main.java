@@ -1,7 +1,7 @@
 package ass.starorad.semestralproject.main;
 
-import ass.starorad.semestralproject.server.IRequestHandler;
-import ass.starorad.semestralproject.server.IResponseWriter;
+import ass.starorad.semestralproject.server.transformers.IRequestHandler;
+import ass.starorad.semestralproject.server.transformers.IResponseWriter;
 import ass.starorad.semestralproject.server.IServer;
 import com.google.inject.Guice;
 import com.google.inject.Injector;

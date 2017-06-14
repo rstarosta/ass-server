@@ -1,6 +1,6 @@
-package ass.starorad.semestralproject.server.impl;
+package ass.starorad.semestralproject.server.data.impl;
 
-import ass.starorad.semestralproject.server.IRawRequest;
+import ass.starorad.semestralproject.server.data.IRawRequest;
 import io.netty.buffer.ByteBuf;
 import java.nio.channels.SocketChannel;
 

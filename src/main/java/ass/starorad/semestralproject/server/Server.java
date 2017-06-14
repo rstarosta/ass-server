@@ -1,10 +1,10 @@
-package ass.starorad.semestralproject.server.impl;
+package ass.starorad.semestralproject.server;
 
-import ass.starorad.semestralproject.server.ByteArrayUtil;
-import ass.starorad.semestralproject.server.IRawRequest;
-import ass.starorad.semestralproject.server.IRequestHandler;
-import ass.starorad.semestralproject.server.IResponseWriter;
-import ass.starorad.semestralproject.server.IServer;
+import ass.starorad.semestralproject.server.data.impl.ClientRequest;
+import ass.starorad.semestralproject.server.util.ByteArrayUtil;
+import ass.starorad.semestralproject.server.data.IRawRequest;
+import ass.starorad.semestralproject.server.transformers.IRequestHandler;
+import ass.starorad.semestralproject.server.transformers.IResponseWriter;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import io.netty.buffer.ByteBuf;

@@ -1,4 +1,4 @@
-package ass.starorad.semestralproject.server;
+package ass.starorad.semestralproject.server.util;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

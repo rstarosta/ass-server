@@ -1,4 +1,4 @@
-package ass.starorad.semestralproject.server;
+package ass.starorad.semestralproject.server.data;
 
 
 import io.netty.handler.codec.http.HttpRequest;

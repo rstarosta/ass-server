@@ -6,11 +6,11 @@ import static org.mockito.Mockito.verify;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
 
-import ass.starorad.semestralproject.server.IHttpRequest;
-import ass.starorad.semestralproject.server.impl.FileManager;
-import ass.starorad.semestralproject.server.impl.HttpResponseData;
-import ass.starorad.semestralproject.server.impl.ParsedHttpRequest;
-import ass.starorad.semestralproject.server.impl.ReactiveCache;
+import ass.starorad.semestralproject.server.data.IHttpRequest;
+import ass.starorad.semestralproject.server.transformers.impl.FileManager;
+import ass.starorad.semestralproject.server.data.impl.HttpResponseData;
+import ass.starorad.semestralproject.server.data.impl.ParsedHttpRequest;
+import ass.starorad.semestralproject.server.transformers.impl.ReactiveCache;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.DefaultHttpRequest;
 import io.netty.handler.codec.http.HttpHeaders;

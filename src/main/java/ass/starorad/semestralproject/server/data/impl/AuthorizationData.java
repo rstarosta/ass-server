@@ -1,4 +1,4 @@
-package ass.starorad.semestralproject.server.impl;
+package ass.starorad.semestralproject.server.data.impl;
 
 public class AuthorizationData {
   private final String user;

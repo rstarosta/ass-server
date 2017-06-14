@@ -1,5 +1,7 @@
 package ass.starorad.semestralproject.server;
 
+import ass.starorad.semestralproject.server.transformers.IRequestHandler;
+import ass.starorad.semestralproject.server.transformers.IResponseWriter;
 import java.io.IOException;
 
 public interface IServer {

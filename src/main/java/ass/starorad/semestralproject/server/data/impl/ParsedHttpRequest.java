@@ -1,6 +1,7 @@
-package ass.starorad.semestralproject.server.impl;
+package ass.starorad.semestralproject.server.data.impl;
 
-import ass.starorad.semestralproject.server.IHttpRequest;
+import ass.starorad.semestralproject.server.data.IHttpRequest;
+import ass.starorad.semestralproject.server.util.PathUtil;
 import io.netty.handler.codec.http.HttpRequest;
 import java.nio.channels.SocketChannel;
 

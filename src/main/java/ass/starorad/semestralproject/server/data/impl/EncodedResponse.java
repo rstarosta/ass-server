@@ -1,11 +1,11 @@
-package ass.starorad.semestralproject.server.impl;
+package ass.starorad.semestralproject.server.data.impl;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
-import ass.starorad.semestralproject.server.IResponse;
+import ass.starorad.semestralproject.server.data.IRawResponse;
 
-public class EncodedResponse implements IResponse {
+public class EncodedResponse implements IRawResponse {
 	protected SocketChannel client;
 	protected ByteBuffer responseData;
 	

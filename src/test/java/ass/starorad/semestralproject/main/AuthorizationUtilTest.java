@@ -6,8 +6,8 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertSame;
 
-import ass.starorad.semestralproject.server.impl.AuthorizationData;
-import ass.starorad.semestralproject.server.impl.AuthorizationUtil;
+import ass.starorad.semestralproject.server.data.impl.AuthorizationData;
+import ass.starorad.semestralproject.server.util.AuthorizationUtil;
 import com.sun.org.apache.xml.internal.security.utils.Base64;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;

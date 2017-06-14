@@ -1,11 +1,11 @@
-package ass.starorad.semestralproject.server.impl;
+package ass.starorad.semestralproject.server.transformers.impl;
 
-import ass.starorad.semestralproject.server.IFileManager;
-import ass.starorad.semestralproject.server.IHttpRequestParser;
-import ass.starorad.semestralproject.server.IHttpResponseEncoder;
-import ass.starorad.semestralproject.server.IRawRequest;
-import ass.starorad.semestralproject.server.IRequestHandler;
-import ass.starorad.semestralproject.server.IResponse;
+import ass.starorad.semestralproject.server.transformers.IFileManager;
+import ass.starorad.semestralproject.server.transformers.IHttpRequestParser;
+import ass.starorad.semestralproject.server.transformers.IHttpResponseEncoder;
+import ass.starorad.semestralproject.server.data.IRawRequest;
+import ass.starorad.semestralproject.server.transformers.IRequestHandler;
+import ass.starorad.semestralproject.server.data.IRawResponse;
 import com.google.inject.Inject;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
@@ -24,7 +24,7 @@ public class RequestHandler implements IRequestHandler {
   }
 
   @Override
-  public ObservableSource<IResponse> apply(Observable<IRawRequest> upstream) {
+  public ObservableSource<IRawResponse> apply(Observable<IRawRequest> upstream) {
     return upstream
         .compose(parser)
         .compose(fileManager)

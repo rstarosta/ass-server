@@ -2,7 +2,7 @@ package ass.starorad.semestralproject.main;
 
 import static org.testng.Assert.assertEquals;
 
-import ass.starorad.semestralproject.server.impl.PathUtil;
+import ass.starorad.semestralproject.server.util.PathUtil;
 import org.testng.annotations.Test;
 
 public class PathUtilTest {

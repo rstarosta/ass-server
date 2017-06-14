@@ -1,6 +1,6 @@
 package ass.starorad.semestralproject.main;
 
-import ass.starorad.semestralproject.server.impl.AuthorizationData;
+import ass.starorad.semestralproject.server.data.impl.AuthorizationData;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;

@@ -2,8 +2,8 @@ package ass.starorad.semestralproject.main;
 
 import static org.junit.Assert.assertEquals;
 
-import ass.starorad.semestralproject.server.impl.HttpResponseData;
-import ass.starorad.semestralproject.server.impl.ReactiveCache;
+import ass.starorad.semestralproject.server.data.impl.HttpResponseData;
+import ass.starorad.semestralproject.server.transformers.impl.ReactiveCache;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import java.nio.file.Path;
 import java.nio.file.Paths;

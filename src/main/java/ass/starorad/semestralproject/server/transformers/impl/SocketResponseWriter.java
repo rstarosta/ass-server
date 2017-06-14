@@ -1,7 +1,7 @@
-package ass.starorad.semestralproject.server.impl;
+package ass.starorad.semestralproject.server.transformers.impl;
 
-import ass.starorad.semestralproject.server.IResponse;
-import ass.starorad.semestralproject.server.IResponseWriter;
+import ass.starorad.semestralproject.server.data.IRawResponse;
+import ass.starorad.semestralproject.server.transformers.IResponseWriter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
@@ -126,7 +126,7 @@ public class SocketResponseWriter implements IResponseWriter, Runnable {
   }
 
   @Override
-  public void accept(IResponse t) throws Exception {
+  public void accept(IRawResponse t) throws Exception {
     logger.info("Registering response {} for writing", t);
     ByteBuffer dataToWrite = t.getResponseData();
     SocketChannel socketToWriteTo = t.getClient();
