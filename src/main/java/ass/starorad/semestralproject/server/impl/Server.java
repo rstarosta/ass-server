@@ -61,7 +61,7 @@ public class Server implements IServer {
       serverChannel = ServerSocketChannel.open();
     } catch (IOException e) {
       logger.error("Unable to open server socket channel");
-      shutdown();
+      return;
     }
 
     try {
@@ -69,7 +69,7 @@ public class Server implements IServer {
       serverChannel.configureBlocking(false);
     } catch (IOException e) {
       logger.error("Unable to bind address", e);
-      shutdown();
+      return;
     }
 
     logger.info("Server started at address {}", address);
@@ -80,14 +80,14 @@ public class Server implements IServer {
       sel = Selector.open();
     } catch (IOException e) {
       logger.error("Unable to open selector", e);
-      shutdown();
+      return;
     }
 
     try {
       serverChannel.register(sel, serverChannel.validOps());
     } catch (ClosedChannelException e) {
       logger.error("Unable to register server socket channel", e);
-      shutdown();
+      return;
     }
 
     // use compose operator on RxJava Observable requests to handle requests using provided handler
@@ -188,8 +188,9 @@ public class Server implements IServer {
 
           if(ByteArrayUtil.endsWith(bytes, delimiter)) {
             logger.info("Reached delimiter, creating request object");
-            requests.onNext(new ClientRequest(socketChannel, byteBuf));
             buffers.remove(socketChannel);
+            key.cancel();
+            requests.onNext(new ClientRequest(socketChannel, byteBuf));
           }
         }).dispose();
     }

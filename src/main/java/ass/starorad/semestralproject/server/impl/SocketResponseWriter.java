@@ -79,12 +79,14 @@ public class SocketResponseWriter implements IResponseWriter, Runnable {
           client.write(bufferToWrite);
         } catch (IOException e) {
           logger.error("Unable to write to socket {}, cleaning up", client, e);
+          selKey.cancel();
           cleanup(client);
         }
 
         // use bufferToWrite.hasRemaining to check, whether whole buffer was written
         if (!bufferToWrite.hasRemaining()) {
           logger.info("Completed writing bytes from buffer {}, cleaning up", bufferToWrite);
+          selKey.cancel();
           cleanup(client);
         }
 
