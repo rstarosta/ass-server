@@ -37,7 +37,7 @@ public class FileManager implements IFileManager {
       return Single.just(HttpResponseData.FileNotFound);
     }
 
-    AuthorizationData authorizationData = request.getAuthorizationData();
+    AuthorizationData authorizationData = AuthorizationUtil.getAuthorizationDataForRequest(request.getHttpRequest());
     if(!checkAuthorization(path, authorizationData)) {
       logger.info("Access to the file with path {} was unauthorized");
       return Single.just(HttpResponseData.Unauthorized);

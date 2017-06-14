@@ -100,6 +100,17 @@ public class FileManagerTest {
   }
 
   @Test
+  public void testRequestForHtaccess() {
+    HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/home/secureFolder/.htaccess");
+
+    IHttpRequest request = new ParsedHttpRequest(null, httpRequest);
+    HttpResponseData data = fileManager.getResponseData(request).blockingGet();
+
+    verify(reactiveCache, never()).getResponseData(Paths.get("home/secureFolder/.htaccess").toAbsolutePath());
+    assertEquals(data.getHttpResponse().status(), HttpResponseStatus.NOT_FOUND);
+  }
+
+  @Test
   public void testWrongRequestType() {
     HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.PUT, "/home/index.html");
     IHttpRequest request = new ParsedHttpRequest(null, httpRequest);

@@ -91,8 +91,7 @@ public class SocketResponseWriter implements IResponseWriter, Runnable {
         }
 
         // cleanup bufferMap of channels that were cancelled or closed by client
-        bufferMap.keySet().stream().filter(socketChannel ->
-            !socketChannel.isConnected() && !socketChannel.isConnectionPending())
+        bufferMap.keySet().stream().filter(socketChannel -> !socketChannel.isOpen())
             .forEach(this::cleanup);
 
         iterator.remove();
