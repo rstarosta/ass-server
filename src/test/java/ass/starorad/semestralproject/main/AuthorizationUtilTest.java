@@ -4,15 +4,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotEquals;
-import static org.testng.Assert.assertSame;
 
 import ass.starorad.semestralproject.server.data.impl.AuthorizationData;
 import ass.starorad.semestralproject.server.util.AuthorizationUtil;
-import com.sun.org.apache.xml.internal.security.utils.Base64;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import java.io.UnsupportedEncodingException;
+import java.util.Base64;
 import org.testng.annotations.Test;
 
 public class AuthorizationUtilTest {
@@ -32,7 +31,8 @@ public class AuthorizationUtilTest {
   @Test
   public void testGetAuthorizationDataForRequest() throws UnsupportedEncodingException {
     HttpHeaders headers = new DefaultHttpHeaders();
-    headers.add("Authorization", "Basic " + Base64.encode("user:pass".getBytes("UTF-8")));
+    headers.add("Authorization",
+        "Basic " + Base64.getEncoder().encodeToString("user:pass".getBytes("UTF-8")));
 
     HttpRequest request = mock(HttpRequest.class);
     when(request.headers()).thenReturn(headers);
@@ -40,6 +40,4 @@ public class AuthorizationUtilTest {
     assertEquals(AuthorizationUtil.getAuthorizationDataForRequest(request),
         new AuthorizationData("user", AuthorizationUtil.hashPassword("pass")));
   }
-
-
 }

@@ -31,29 +31,34 @@ import org.slf4j.LoggerFactory;
 
 public class Server implements IServer {
 
+  private static int BufferSize = 8096;
+
   /**
    * Address that server will bind to
    */
-  protected SocketAddress address;
-  protected boolean exit = false;
+  private SocketAddress address;
+  private boolean exit = false;
 
-  private ByteBuffer byteBuffer = ByteBuffer.allocate(8096);
+  private ByteBuffer byteBuffer = ByteBuffer.allocate(BufferSize);
   private Map<SocketChannel, ByteBuf> buffers = new ConcurrentHashMap<>();
   private ExecutorService executorService = Executors.newFixedThreadPool(30);
+  private PublishSubject<IRawRequest> requests = PublishSubject.create();
 
   private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
-  /*
-   * Use RxJava Subject
-   * You can use PublishSubject, which is instantiated by PublishSubject.create()
-   */
-  protected PublishSubject<IRawRequest> requests = PublishSubject.create();
 
   @Inject
   public Server(@Named("Socket address") SocketAddress address) {
     this.address = address;
   }
 
+  /**
+   * Runs the server.
+   *
+   * @param handler - ObservableTransformer that processes requests
+   * @param writer - Consumer that consumes request and writes it to client
+   * @param delimiter - terminates requests
+   */
   public void run(IRequestHandler handler, IResponseWriter writer, String delimiter) {
     // open, bind and configure ServerSocketChannel
     ServerSocketChannel serverChannel = null;
@@ -90,8 +95,7 @@ public class Server implements IServer {
       return;
     }
 
-    // use compose operator on RxJava Observable requests to handle requests using provided handler
-    // use response writer to write response to client
+    // handle requests using the RequestHandler ran on a thread pool
     Disposable handlerDisposable = requests
         .subscribeOn(Schedulers.from(executorService))
         .compose(handler)
@@ -114,6 +118,9 @@ public class Server implements IServer {
     handlerDisposable.dispose();
   }
 
+  /**
+   * Shuts down the server
+   */
   public void shutdown() {
     exit = true;
   }
@@ -135,17 +142,12 @@ public class Server implements IServer {
         iterator.remove();    // this is important, as selector only adds but does not remove
       }
       emittor.onComplete();
-    })
-    .filter(SelectionKey::isValid)
-    .cache();
+    }).filter(SelectionKey::isValid)
+        .cache();
   }
 
-  // using valid keys observable:
-  // 1) clientChannel <- accept on acceptable key
-  // 2) clientChannel.configureBlocking(false);
-  // 3) clientChannel.register(selector, SelectionKey.OP_READ);
   private void acceptAndRegister(Selector sel, Observable<SelectionKey> validKeys) {
-   validKeys
+    validKeys
         .filter(SelectionKey::isValid)
         .filter(SelectionKey::isAcceptable)
         .forEach(key -> {
@@ -156,14 +158,13 @@ public class Server implements IServer {
         }).dispose();
   }
 
-  // 1) (SocketChannel)key.channel() on readable key
-  // 2) read from channel (you can use ByteArrayUtil)
-  // 3) append data to some kind of buffer (ByteBuffer, ByteArrayOutputStream, StringBuilder, ...)
-  //		this might have tremendous impact on performance, but beware of premature optimization
-  //		note that speed is not primary objective of this homework
-  // 4) construct request object when whole message is stored in buffer (message is terminated by terminator string)
-  // 5) emit request object into observable
-  //	(hint: using PublishSubject is convenient)
+  /**
+   * Reads data from the socket into ByteBuf and constructs requests upon reaching the given
+   * delimiter.
+   *
+   * @param delimiter request terminator
+   * @param validKeys Observable with valid keys
+   */
   private void readAndBuildRequests(String delimiter, Observable<SelectionKey> validKeys) {
     validKeys
         .filter(SelectionKey::isValid)
@@ -186,17 +187,17 @@ public class Server implements IServer {
             return;
           }
 
-          if(ByteArrayUtil.endsWith(bytes, delimiter)) {
+          if (ByteArrayUtil.endsWith(bytes, delimiter)) {
             logger.info("Reached delimiter, creating request object");
             buffers.remove(socketChannel);
             key.cancel();
             requests.onNext(new ClientRequest(socketChannel, byteBuf));
           }
         }).dispose();
-    }
+  }
 
   private ByteBuf getOrCreateMessageBuilder(SocketChannel socketChannel) {
-    return buffers.computeIfAbsent(socketChannel, c -> Unpooled.buffer(1024));
+    return buffers.computeIfAbsent(socketChannel, c -> Unpooled.buffer(BufferSize));
   }
 
 }

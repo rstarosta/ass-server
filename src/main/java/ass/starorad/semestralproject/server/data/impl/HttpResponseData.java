@@ -8,6 +8,10 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 
+/**
+ * Data object carrying the response headers and content, uses data structures from Netty.
+ * The class includes static instances for convenience.
+ */
 public class HttpResponseData {
 
   public static final HttpResponseData Ok = new HttpResponseData(
@@ -23,20 +27,20 @@ public class HttpResponseData {
       ));
 
   public static final HttpResponseData Unauthorized = new HttpResponseData(
-        new DefaultHttpResponse(
-            HttpVersion.HTTP_1_1,
-            HttpResponseStatus.UNAUTHORIZED
-        ));
-
-  static {
-    Unauthorized.getHttpResponse().headers().add("WWW-Authenticate", "Basic");
-  }
-  
+      new DefaultHttpResponse(
+          HttpVersion.HTTP_1_1,
+          HttpResponseStatus.UNAUTHORIZED
+      ));
+ 
   public static final HttpResponseData BadRequest = new HttpResponseData(
       new DefaultHttpResponse(
           HttpVersion.HTTP_1_1,
           HttpResponseStatus.BAD_REQUEST
       ));
+
+  static {
+    Unauthorized.getHttpResponse().headers().add("WWW-Authenticate", "Basic");
+  }
 
   private HttpResponse httpResponse;
   private ByteBuf content;

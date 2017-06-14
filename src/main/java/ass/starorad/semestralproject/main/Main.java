@@ -12,7 +12,9 @@ import org.slf4j.LoggerFactory;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
-
+/**
+ * Main class that instantiates the module and runs the server.
+ */
 public class Main {
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(Main.class);
@@ -29,21 +31,22 @@ public class Main {
       }
     }
 
-    if(args.length > 1) {
+    if (args.length > 1) {
       documentRoot = args[1];
     }
 
     boolean debug = false;
-    if(args.length > 2) {
+    if (args.length > 2) {
       debug = Boolean.parseBoolean(args[2]);
     }
 
     Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-    if(debug) {
+    if (debug) {
       root.setLevel(Level.INFO);
     }
 
-    Injector injector = Guice.createInjector(new ServerModule(new InetSocketAddress("localhost", port), documentRoot));
+    Injector injector = Guice
+        .createInjector(new ServerModule(new InetSocketAddress("localhost", port), documentRoot));
 
     IServer server = injector.getInstance(IServer.class);
     IRequestHandler requestHandler = injector.getInstance(IRequestHandler.class);

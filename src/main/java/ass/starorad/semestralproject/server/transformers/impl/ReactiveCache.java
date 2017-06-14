@@ -16,12 +16,19 @@ import javaslang.control.Try;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Stores response data that was already accessed during the server runtime.
+ */
 public class ReactiveCache {
 
   private ConcurrentHashMap<Path, SoftReference<HttpResponseData>> cache = new ConcurrentHashMap<>();
 
   private static final Logger logger = LoggerFactory.getLogger(ReactiveCache.class);
 
+  /**
+   * Retrieves the appropriate response data for the requested path. First checks the contents of
+   * the cache, otherwise it reads the file from disk and stores it.
+   */
   public Single<HttpResponseData> getResponseData(Path path) {
     return Observable.concat(
         Observable.just(path)

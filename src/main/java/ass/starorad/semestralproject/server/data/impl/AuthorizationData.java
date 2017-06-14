@@ -1,6 +1,10 @@
 package ass.starorad.semestralproject.server.data.impl;
 
+/**
+ * Data object carrying username and password found in Authorization header and .htaccess files.
+ */
 public class AuthorizationData {
+
   private final String user;
   private final String password;
 

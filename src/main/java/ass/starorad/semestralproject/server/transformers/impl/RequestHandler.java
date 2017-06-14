@@ -10,6 +10,9 @@ import com.google.inject.Inject;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
 
+/**
+ * Request handling pipeline that transforms requests into responses.
+ */
 public class RequestHandler implements IRequestHandler {
 
   private IHttpRequestParser parser;
@@ -17,7 +20,8 @@ public class RequestHandler implements IRequestHandler {
   private IFileManager fileManager;
 
   @Inject
-  public RequestHandler(IHttpRequestParser parser, IHttpResponseEncoder encoder, IFileManager fileManager) {
+  public RequestHandler(IHttpRequestParser parser, IHttpResponseEncoder encoder,
+      IFileManager fileManager) {
     this.parser = parser;
     this.encoder = encoder;
     this.fileManager = fileManager;

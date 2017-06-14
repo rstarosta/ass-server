@@ -10,6 +10,12 @@ public class PathUtil {
 
   private static final Logger logger = LoggerFactory.getLogger(PathUtil.class);
 
+  /**
+   * Decodes the given uri into a UTF-8 encoded String.
+   *
+   * @param uri uri to decode
+   * @return String
+   */
   public static String decodeUri(String uri) {
     try {
       return URLDecoder.decode(uri, "UTF-8");
@@ -19,9 +25,15 @@ public class PathUtil {
     }
   }
 
+  /**
+   * Decodes the requested uri and removes parameters and anchor.
+   *
+   * @param request request
+   * @return String path
+   */
   public static String extractPathFromRequest(HttpRequest request) {
     String decoded = decodeUri(request.uri());
-    if(decoded == null) {
+    if (decoded == null) {
       logger.error("Unable to extract path from {}", request);
       return null;
     }
@@ -29,6 +41,12 @@ public class PathUtil {
     return extractPath(decoded);
   }
 
+  /**
+   * Extracts only the file path from a given uri.
+   *
+   * @param path path
+   * @return String
+   */
   public static String extractPath(String path) {
     int paramIndex = path.indexOf('?');
     int anchorIndex = path.indexOf('#');

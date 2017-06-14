@@ -13,6 +13,9 @@ import java.nio.ByteBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Encodes the response header and contents into a ByteBuffer using HttpResponseEncoder from Netty.
+ */
 public class NettyResponseEncoder implements IHttpResponseEncoder {
 
   private static final Logger logger = LoggerFactory.getLogger(NettyResponseEncoder.class);
@@ -28,7 +31,7 @@ public class NettyResponseEncoder implements IHttpResponseEncoder {
       ByteBuf byteBuf = ch.readOutbound();
       ch.close();
 
-      if(content != null) {
+      if (content != null) {
         byteBuf.writeBytes(content);
         content.resetReaderIndex();
       }

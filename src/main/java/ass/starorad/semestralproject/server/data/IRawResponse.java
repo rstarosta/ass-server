@@ -4,6 +4,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
 public interface IRawResponse {
-	SocketChannel getClient();
-	ByteBuffer getResponseData();
+
+  SocketChannel getClient();
+
+  ByteBuffer getResponseData();
 }

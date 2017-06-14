@@ -16,6 +16,12 @@ public class AuthorizationUtil {
 
   private static final Logger logger = LoggerFactory.getLogger(AuthorizationUtil.class);
 
+  /**
+   * Returns a String of the hashed the password using a given hashing algorithm.
+   *
+   * @param password password to be hashed
+   * @return hashed password
+   */
   public static String hashPassword(String password) {
     MessageDigest messageDigest = null;
     try {
@@ -38,6 +44,13 @@ public class AuthorizationUtil {
     return enc.encodeToString(hash);
   }
 
+  /**
+   * Decodes the Authorization header from an HttpRequest and constructs AuthorizationData object
+   * with the hashed password.
+   *
+   * @param httpRequest request with the Authorization header
+   * @return authorization data
+   */
   public static AuthorizationData getAuthorizationDataForRequest(HttpRequest httpRequest) {
     String authorization = httpRequest.headers().get("Authorization");
     if (authorization != null && authorization.startsWith("Basic")) {

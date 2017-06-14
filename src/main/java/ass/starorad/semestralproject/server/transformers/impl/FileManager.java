@@ -22,6 +22,10 @@ import javaslang.control.Try;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * File manager receives parsed requests and checks their path and authentication data before
+ * retrieving them from the cache.
+ */
 public class FileManager implements IFileManager {
 
   private Path rootDirectory;
@@ -30,11 +34,20 @@ public class FileManager implements IFileManager {
   private static final Logger logger = LoggerFactory.getLogger(FileManager.class);
 
   @Inject
-  public FileManager(@Named("Document root") String rootDirectoryPath, ReactiveCache reactiveCache) {
+  public FileManager(@Named("Document root") String rootDirectoryPath,
+      ReactiveCache reactiveCache) {
     setRootDirectoryFromPath(rootDirectoryPath);
     this.reactiveCache = reactiveCache;
   }
 
+  /**
+   * Processes the request and returns the appropriate response data. Checks that the requested path
+   * is in the root directory and is either freely accessible, or the client supplied the correct
+   * authorization data.
+   *
+   * @param request The request to be processed
+   * @return Single<HttpResponseData> response
+   */
   public Single<HttpResponseData> getResponseData(IHttpRequest request) {
     Path path = rootDirectory.resolve(request.getPath()).normalize().toAbsolutePath();
     if (!checkPath(path)) {
@@ -42,17 +55,18 @@ public class FileManager implements IFileManager {
       return Single.just(HttpResponseData.FileNotFound);
     }
 
-    AuthorizationData authorizationData = AuthorizationUtil.getAuthorizationDataForRequest(request.getHttpRequest());
-    if(!checkAuthorization(path, authorizationData)) {
+    AuthorizationData authorizationData = AuthorizationUtil
+        .getAuthorizationDataForRequest(request.getHttpRequest());
+    if (!checkAuthorization(path, authorizationData)) {
       logger.info("Access to the file with path {} was unauthorized");
       return Single.just(HttpResponseData.Unauthorized);
     }
 
     HttpMethod method = request.getHttpRequest().method();
-    if(method.equals(HttpMethod.GET)) {
+    if (method.equals(HttpMethod.GET)) {
       logger.info("GET request valid, accessing cache");
       return reactiveCache.getResponseData(path);
-    } else if(method.equals(HttpMethod.HEAD)) {
+    } else if (method.equals(HttpMethod.HEAD)) {
       logger.info("HEAD request valid, returning OK");
       return Single.just(HttpResponseData.Ok);
     }
@@ -75,7 +89,7 @@ public class FileManager implements IFileManager {
       // unable to read htaccess, rather don't serve the file
       logger.error("Unable to read htaccess file at path {}", htaccessPath, e);
       return false;
-    } catch(HtaccessParseException e) {
+    } catch (HtaccessParseException e) {
       // htaccess is in wrong format
       logger.error("Unable to parse htaccess file at path {}", htaccessPath, e);
       return false;
@@ -88,7 +102,7 @@ public class FileManager implements IFileManager {
     return isInRootDirectory(path) && !path.endsWith(".htaccess");
   }
 
-  public void setRootDirectoryFromPath(String path) {
+  private void setRootDirectoryFromPath(String path) {
     Path root = Paths.get(path).normalize().toAbsolutePath();
     if (root.toFile().exists() && root.toFile().isDirectory()) {
       rootDirectory = root;
@@ -100,11 +114,11 @@ public class FileManager implements IFileManager {
   private Path getClosestHtaccessPath(Path path) {
     Path current = path;
 
-    while(!current.equals(rootDirectory)) {
+    while (!current.equals(rootDirectory)) {
       current = current.getParent();
       Path htaccessPath = current.resolve(".htaccess");
 
-      if(htaccessPath.toFile().exists()) {
+      if (htaccessPath.toFile().exists()) {
         logger.info("Found .htaccess file at {}", htaccessPath);
         return htaccessPath;
       }
@@ -113,7 +127,8 @@ public class FileManager implements IFileManager {
     return null;
   }
 
-  private AuthorizationData getAuthorizationDataFromHtaccess(Path path) throws IOException, HtaccessParseException {
+  private AuthorizationData getAuthorizationDataFromHtaccess(Path path)
+      throws IOException, HtaccessParseException {
     logger.info("Parsing htaccess file");
     return Files.lines(path)
         .filter(line -> !line.isEmpty())

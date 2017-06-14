@@ -16,11 +16,18 @@ import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
 import java.net.SocketAddress;
 
+/**
+ * Guice module specifying the dependencies.
+ */
 public class ServerModule extends AbstractModule {
 
   private final SocketAddress socketAddress;
   private final String documentRootPath;
 
+  /**
+   * @param socketAddress - address and port to run the server on
+   * @param documentRootPath - path to document root
+   */
   public ServerModule(SocketAddress socketAddress, String documentRootPath) {
     this.socketAddress = socketAddress;
     this.documentRootPath = documentRootPath;

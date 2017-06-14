@@ -16,17 +16,21 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Response writer that uses a selector to handle multiple responses at once.
+ */
 public class SocketResponseWriter implements IResponseWriter, Runnable {
 
+  private static final Logger logger = LoggerFactory.getLogger(SocketResponseWriter.class);
+  private final Selector selector;
   // elements are inserted from other thread
-  protected ConcurrentLinkedQueue<SocketChannel> queue = new ConcurrentLinkedQueue<>();
-  protected Map<SocketChannel, ByteBuffer> bufferMap = new ConcurrentHashMap<>();
-
-  protected final Selector selector;
+  private ConcurrentLinkedQueue<SocketChannel> queue = new ConcurrentLinkedQueue<>();
+  private Map<SocketChannel, ByteBuffer> bufferMap = new ConcurrentHashMap<>();
   private boolean exit = false;
 
-  private static final Logger logger = LoggerFactory.getLogger(SocketResponseWriter.class);
-
+  /**
+   * Opens a selector and runs the response writer thread.
+   */
   public SocketResponseWriter() {
     try {
       // prepare selector

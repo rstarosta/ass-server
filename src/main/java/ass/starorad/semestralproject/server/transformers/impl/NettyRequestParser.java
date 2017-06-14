@@ -13,6 +13,9 @@ import io.reactivex.ObservableSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Parses raw requests using HttpRequestDecoder from Netty.
+ */
 public class NettyRequestParser implements IHttpRequestParser {
 
   private static int MaxInitialLineLength = 8192;
@@ -24,7 +27,8 @@ public class NettyRequestParser implements IHttpRequestParser {
   @Override
   public ObservableSource<IHttpRequest> apply(Observable<IRawRequest> observable) {
     return observable.map(request -> {
-      EmbeddedChannel ch = new EmbeddedChannel(new HttpRequestDecoder(MaxInitialLineLength, MaxHeaderSize, MaxChunkSize));
+      EmbeddedChannel ch = new EmbeddedChannel(
+          new HttpRequestDecoder(MaxInitialLineLength, MaxHeaderSize, MaxChunkSize));
 
       ByteBuf byteBuf = request.getRequestData();
       ch.writeInbound(byteBuf);
