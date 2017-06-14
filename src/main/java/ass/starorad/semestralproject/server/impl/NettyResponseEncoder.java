@@ -9,8 +9,12 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
 import java.nio.ByteBuffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class NettyResponseEncoder implements IHttpResponseEncoder {
+
+  private static final Logger logger = LoggerFactory.getLogger(NettyResponseEncoder.class);
 
   @Override
   public ObservableSource<IResponse> apply(Observable<IHttpResponse> observable) {
@@ -31,6 +35,7 @@ public class NettyResponseEncoder implements IHttpResponseEncoder {
       ByteBuffer byteBuffer = byteBuf.nioBuffer();
       byteBuf.release();
 
+      logger.info("Successfully encoded response {}", response);
       return new EncodedResponse(response.getClient(), byteBuffer);
     });
   }

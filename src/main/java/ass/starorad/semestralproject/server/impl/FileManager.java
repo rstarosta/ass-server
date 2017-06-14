@@ -14,11 +14,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import javaslang.control.Try;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FileManager implements IFileManager {
 
   private Path rootDirectory;
   private ReactiveCache reactiveCache;
+
+  private static final Logger logger = LoggerFactory.getLogger(FileManager.class);
 
   @Inject
   public FileManager(@Named("Document root") String rootDirectoryPath, ReactiveCache reactiveCache) {
@@ -29,27 +33,33 @@ public class FileManager implements IFileManager {
   public Single<HttpResponseData> getResponseData(IHttpRequest request) {
     Path path = rootDirectory.resolve(request.getPath()).normalize().toAbsolutePath();
     if (!checkPath(path)) {
+      logger.info("File with path {} was not found in the root directory");
       return Single.just(HttpResponseData.FileNotFound);
     }
 
     AuthorizationData authorizationData = request.getAuthorizationData();
     if(!checkAuthorization(path, authorizationData)) {
+      logger.info("Access to the file with path {} was unauthorized");
       return Single.just(HttpResponseData.Unauthorized);
     }
 
     HttpMethod method = request.getHttpRequest().method();
     if(method.equals(HttpMethod.GET)) {
+      logger.info("GET request valid, accessing cache");
       return reactiveCache.getResponseData(path);
     } else if(method.equals(HttpMethod.HEAD)) {
+      logger.info("HEAD request valid, returning OK");
       return Single.just(HttpResponseData.Ok);
     }
 
+    logger.info("Request type not allowed, returning BAD_REQUEST");
     return Single.just(HttpResponseData.BadRequest);
   }
 
   private boolean checkAuthorization(Path path, AuthorizationData provided) {
     Path htaccessPath = getClosestHtaccessPath(path);
     if (htaccessPath == null) {
+      logger.info("No .htaccess file found, allowing access");
       return true;
     }
 
@@ -57,12 +67,12 @@ public class FileManager implements IFileManager {
     try {
       required = getAuthorizationDataFromHtaccess(htaccessPath);
     } catch (IOException e) {
-      e.printStackTrace();
       // unable to read htaccess, rather don't serve the file
+      logger.error("Unable to read htaccess file at path {}", htaccessPath, e);
       return false;
     } catch(HtaccessParseException e) {
-      e.printStackTrace();
       // htaccess is in wrong format
+      logger.error("Unable to parse htaccess file at path {}", htaccessPath, e);
       return false;
     }
 
@@ -78,6 +88,8 @@ public class FileManager implements IFileManager {
     if (root.toFile().exists() && root.toFile().isDirectory()) {
       rootDirectory = root;
     }
+
+    logger.info("Set root directory to {}", path);
   }
 
   private Path getClosestHtaccessPath(Path path) {
@@ -88,6 +100,7 @@ public class FileManager implements IFileManager {
       Path htaccessPath = current.resolve(".htaccess");
 
       if(htaccessPath.toFile().exists()) {
+        logger.info("Found .htaccess file at {}", htaccessPath);
         return htaccessPath;
       }
     }
@@ -96,6 +109,7 @@ public class FileManager implements IFileManager {
   }
 
   private AuthorizationData getAuthorizationDataFromHtaccess(Path path) throws IOException, HtaccessParseException {
+    logger.info("Parsing htaccess file");
     return Files.lines(path)
         .filter(line -> !line.isEmpty())
         .findFirst()

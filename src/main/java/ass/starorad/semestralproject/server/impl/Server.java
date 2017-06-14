@@ -16,6 +16,7 @@ import io.reactivex.subjects.PublishSubject;
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -25,6 +26,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Server implements IServer {
 
@@ -38,6 +41,8 @@ public class Server implements IServer {
   private Map<SocketChannel, ByteBuf> buffers = new ConcurrentHashMap<>();
   private ExecutorService executorService = Executors.newFixedThreadPool(30);
 
+  private static final Logger logger = LoggerFactory.getLogger(Server.class);
+
   /*
    * Use RxJava Subject
    * You can use PublishSubject, which is instantiated by PublishSubject.create()
@@ -49,18 +54,41 @@ public class Server implements IServer {
     this.address = address;
   }
 
-  public void run(IRequestHandler handler, IResponseWriter writer, String delimiter)
-      throws IOException {
+  public void run(IRequestHandler handler, IResponseWriter writer, String delimiter) {
     // open, bind and configure ServerSocketChannel
-    ServerSocketChannel serverChannel = ServerSocketChannel.open();
-    serverChannel.bind(address);
-    serverChannel.configureBlocking(false);
+    ServerSocketChannel serverChannel = null;
+    try {
+      serverChannel = ServerSocketChannel.open();
+    } catch (IOException e) {
+      logger.error("Unable to open server socket channel");
+      shutdown();
+    }
 
-    System.out.println("Server started on address:" + address);
+    try {
+      serverChannel.bind(address);
+      serverChannel.configureBlocking(false);
+    } catch (IOException e) {
+      logger.error("Unable to bind address", e);
+      shutdown();
+    }
+
+    logger.info("Server started at address {}", address);
 
     // open selector and register serverSocketChannel to it
-    Selector sel = Selector.open();
-    serverChannel.register(sel, serverChannel.validOps());
+    Selector sel = null;
+    try {
+      sel = Selector.open();
+    } catch (IOException e) {
+      logger.error("Unable to open selector", e);
+      shutdown();
+    }
+
+    try {
+      serverChannel.register(sel, serverChannel.validOps());
+    } catch (ClosedChannelException e) {
+      logger.error("Unable to register server socket channel", e);
+      shutdown();
+    }
 
     // use compose operator on RxJava Observable requests to handle requests using provided handler
     // use response writer to write response to client
@@ -77,7 +105,12 @@ public class Server implements IServer {
       readAndBuildRequests(delimiter, validKeys);
     }
 
-    serverChannel.close();
+    try {
+      serverChannel.close();
+    } catch (IOException e) {
+      logger.error("Unable to close server socket channel");
+    }
+
     handlerDisposable.dispose();
   }
 
@@ -85,8 +118,14 @@ public class Server implements IServer {
     exit = true;
   }
 
-  private Observable<SelectionKey> selectValidKeys(Selector sel) throws IOException {
-    sel.select();
+  private Observable<SelectionKey> selectValidKeys(Selector sel) {
+    try {
+      sel.select();
+    } catch (IOException e) {
+      logger.error("Unable to select on selector {}", sel, e);
+      return Observable.empty();
+    }
+
     Iterator<SelectionKey> iterator = sel.selectedKeys().iterator();
 
     return Observable.<SelectionKey>create((emittor) -> {
@@ -113,6 +152,7 @@ public class Server implements IServer {
           SocketChannel clientChannel = ((ServerSocketChannel) key.channel()).accept();
           clientChannel.configureBlocking(false);
           clientChannel.register(sel, SelectionKey.OP_READ);
+          logger.info("Accepted and registered for reading {}", clientChannel);
         }).dispose();
   }
 
@@ -136,8 +176,10 @@ public class Server implements IServer {
           try {
             bytes = ByteArrayUtil.readFromChannel(byteBuffer, socketChannel);
             byteBuf.writeBytes(bytes);
+            logger.info("Successfully read from channel");
           } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Unable to read from channel {}, closing", socketChannel, e);
+            socketChannel.close();
             buffers.remove(socketChannel);
             byteBuf.release();
             key.cancel();
@@ -145,6 +187,7 @@ public class Server implements IServer {
           }
 
           if(ByteArrayUtil.endsWith(bytes, delimiter)) {
+            logger.info("Reached delimiter, creating request object");
             requests.onNext(new ClientRequest(socketChannel, byteBuf));
             buffers.remove(socketChannel);
           }

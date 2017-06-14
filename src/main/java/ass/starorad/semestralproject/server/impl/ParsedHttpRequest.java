@@ -8,6 +8,8 @@ import java.nio.channels.SocketChannel;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ParsedHttpRequest implements IHttpRequest {
 
@@ -17,6 +19,8 @@ public class ParsedHttpRequest implements IHttpRequest {
   private SocketChannel client;
   private HttpRequest httpRequest;
   private String path;
+
+  private static final Logger logger = LoggerFactory.getLogger(ParsedHttpRequest.class);
 
   public ParsedHttpRequest(SocketChannel client, HttpRequest httpRequest) {
     this.client = client;
@@ -43,7 +47,7 @@ public class ParsedHttpRequest implements IHttpRequest {
     try {
       path = URLDecoder.decode(request.uri(), "UTF-8");
     } catch (UnsupportedEncodingException e) {
-      e.printStackTrace();
+      logger.error("Unable to decode URI {}", request.uri(), e);
       return null;
     }
 
@@ -60,7 +64,12 @@ public class ParsedHttpRequest implements IHttpRequest {
       }
     }
 
-    return path.isEmpty() ? "index.html" : path;
+    if(path.isEmpty()) {
+      logger.info("Path is empty, trying index.html");
+      return "index.html";
+    }
+
+    return path;
   }
 
   @Override
@@ -81,10 +90,8 @@ public class ParsedHttpRequest implements IHttpRequest {
 
         String hashedPassword = hashPassword(parts[1], Salt, HashingAlgorithm);
         return new AuthorizationData(parts[0], hashedPassword);
-      } catch (NoSuchAlgorithmException e) {
-        e.printStackTrace();
       } catch (UnsupportedEncodingException e) {
-        e.printStackTrace();
+        logger.error("Unable to convert strings, wrong encoding?", e);
       }
     }
 
@@ -93,14 +100,20 @@ public class ParsedHttpRequest implements IHttpRequest {
 
   //TODO: Move into helper class?
   public static String hashPassword(String password, String salt, String algorithm)
-      throws UnsupportedEncodingException, NoSuchAlgorithmException {
-      MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
-      Base64.Encoder enc = Base64.getEncoder();
+      throws UnsupportedEncodingException  {
+    MessageDigest messageDigest = null;
+    try {
+      messageDigest = MessageDigest.getInstance(algorithm);
+    } catch (NoSuchAlgorithmException e) {
+      logger.error("Wrong hashing algorithm", e);
+      return null;
+    }
 
-      messageDigest.update(password.getBytes("UTF-8"));
-      messageDigest.update(salt.getBytes("UTF-8"));
-      byte[] hash = messageDigest.digest();
+    messageDigest.update(password.getBytes("UTF-8"));
+    messageDigest.update(salt.getBytes("UTF-8"));
+    byte[] hash = messageDigest.digest();
 
-      return enc.encodeToString(hash);
+    Base64.Encoder enc = Base64.getEncoder();
+    return enc.encodeToString(hash);
   }
 }

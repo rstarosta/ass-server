@@ -1,21 +1,21 @@
 package ass.starorad.semestralproject.main;
 
-import ass.starorad.semestralproject.server.IFileManager;
-import ass.starorad.semestralproject.server.IHttpRequestParser;
-import ass.starorad.semestralproject.server.IHttpResponseEncoder;
-import ass.starorad.semestralproject.server.IRequest;
 import ass.starorad.semestralproject.server.IRequestHandler;
 import ass.starorad.semestralproject.server.IResponseWriter;
+import ass.starorad.semestralproject.server.IServer;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import org.slf4j.LoggerFactory;
 
-import ass.starorad.semestralproject.server.IServer;
-import ass.starorad.semestralproject.server.impl.RequestHandler;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 
 
 public class Main {
+
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(Main.class);
 
   public static void main(String[] args) throws IOException {
     int port = 8080;
@@ -25,7 +25,7 @@ public class Main {
       try {
         port = Integer.parseInt(args[0]);
       } catch (NumberFormatException e) {
-        System.err.println("Couldn't parse port number, using default port 8080.");
+        logger.warn("Couldn't parse port number, using default port 8080.");
       }
     }
 
@@ -33,11 +33,23 @@ public class Main {
       documentRoot = args[1];
     }
 
+    boolean debug = false;
+    if(args.length > 2) {
+      debug = Boolean.parseBoolean(args[2]);
+    }
+
+    Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+    if(debug) {
+      root.setLevel(Level.INFO);
+    }
+
     Injector injector = Guice.createInjector(new ServerModule(new InetSocketAddress("localhost", port), documentRoot));
 
     IServer server = injector.getInstance(IServer.class);
     IRequestHandler requestHandler = injector.getInstance(IRequestHandler.class);
     IResponseWriter responseWriter = injector.getInstance(IResponseWriter.class);
+
+    logger.info("Starting server on port {} using document root '{}'", port, documentRoot);
 
     server.run(
         requestHandler,

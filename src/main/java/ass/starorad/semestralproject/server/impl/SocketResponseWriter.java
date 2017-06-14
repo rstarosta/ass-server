@@ -5,6 +5,7 @@ import ass.starorad.semestralproject.server.IResponseWriter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
@@ -12,18 +13,19 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SocketResponseWriter implements IResponseWriter, Runnable {
-
-  private int counter = 0;
 
   // elements are inserted from other thread
   protected ConcurrentLinkedQueue<SocketChannel> queue = new ConcurrentLinkedQueue<>();
   protected Map<SocketChannel, ByteBuffer> bufferMap = new ConcurrentHashMap<>();
 
   protected final Selector selector;
-
   private boolean exit = false;
+
+  private static final Logger logger = LoggerFactory.getLogger(SocketResponseWriter.class);
 
   public SocketResponseWriter() {
     try {
@@ -33,29 +35,25 @@ public class SocketResponseWriter implements IResponseWriter, Runnable {
       throw new UncheckedIOException(e);
     }
 
+    logger.info("Selector opened, starting thread");
+
     // Start single thread that writes responses in non-blocking way using selector
     new Thread(this).start();
   }
 
   @Override
   public void run() {
-    // there could be better stopping condition
-    // e.g.: IResponseWriter could inherit from subscriber, than this thread could be stopped on onComplete message
-    System.out.println("Started writing thread .. ");
+    logger.info("Started writing thread");
 
     while (!exit) {
       // register channels that were added to queue
-      try {
-        registerChannels();
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+      registerChannels();
 
       // call blocking selector.select()
       try {
         selector.select();
       } catch (IOException e) {
-        e.printStackTrace();
+        logger.error("Select failed, trying again", e);
         continue;
       }
 
@@ -65,10 +63,10 @@ public class SocketResponseWriter implements IResponseWriter, Runnable {
 
         SocketChannel client = (SocketChannel) selKey.channel();
 
-        // TODO check that key is readable and valid and stuff
         if (!selKey.isValid() || !selKey.isWritable()) {
-          System.out.println("Well shit");
+          logger.error("Key {} is not writable, cancelling", selKey);
           selKey.cancel();
+          cleanup(client);
           iterator.remove();
           continue;
         }
@@ -80,13 +78,13 @@ public class SocketResponseWriter implements IResponseWriter, Runnable {
         try {
           client.write(bufferToWrite);
         } catch (IOException e) {
+          logger.error("Unable to write to socket {}, cleaning up", client, e);
           cleanup(client);
-          e.printStackTrace();
         }
 
         // use bufferToWrite.hasRemaining to check, whether whole buffer was written
         if (!bufferToWrite.hasRemaining()) {
-          System.out.println("Finished " + ++counter);
+          logger.info("Completed writing bytes from buffer {}, cleaning up", bufferToWrite);
           cleanup(client);
         }
 
@@ -108,23 +106,27 @@ public class SocketResponseWriter implements IResponseWriter, Runnable {
     try {
       client.close();
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error("Unable to close socket {}", client, e);
     }
     bufferMap.remove(client);
   }
 
-  public void registerChannels() throws IOException {
+  private void registerChannels() {
     while (!queue.isEmpty()) {
       SocketChannel toBeRegistered = queue.poll();
 
       // register channel for write operation
-      toBeRegistered.register(selector, SelectionKey.OP_WRITE);
+      try {
+        toBeRegistered.register(selector, SelectionKey.OP_WRITE);
+      } catch (ClosedChannelException e) {
+        logger.error("Unable to register channed {}", toBeRegistered, e);
+      }
     }
   }
 
   @Override
   public void accept(IResponse t) throws Exception {
-    System.out.println("Registering response for writing ..");
+    logger.info("Registering response {} for writing", t);
     ByteBuffer dataToWrite = t.getResponseData();
     SocketChannel socketToWriteTo = t.getClient();
     bufferMap.put(socketToWriteTo, dataToWrite);

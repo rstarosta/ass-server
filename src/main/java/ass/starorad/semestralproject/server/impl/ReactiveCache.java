@@ -13,10 +13,14 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import javaslang.control.Try;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ReactiveCache {
 
   private ConcurrentHashMap<Path, SoftReference<HttpResponseData>> cache = new ConcurrentHashMap<>();
+
+  private static final Logger logger = LoggerFactory.getLogger(ReactiveCache.class);
 
   public Single<HttpResponseData> getResponseData(Path path) {
     return Observable.concat(
@@ -25,7 +29,8 @@ public class ReactiveCache {
             .map(cache::get)
             .map(softReference -> Optional.ofNullable(softReference.get()))
             .filter(Optional::isPresent)
-            .map(Optional::get),
+            .map(Optional::get)
+            .doOnNext(responseData -> logger.info("Found cached response data {}", responseData)),
         Observable.just(path)
             .map(p -> Try.of(() -> Files.readAllBytes(p)))
             .filter(Try::isSuccess)
@@ -34,8 +39,10 @@ public class ReactiveCache {
                 new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK),
                 Unpooled.wrappedBuffer(bytes)
             ))
-            .doOnNext(responseData ->
-                cache.put(path, new SoftReference<HttpResponseData>(responseData))
+            .doOnNext(responseData -> {
+                  logger.info("Read file from disk, caching response data {}", responseData);
+                  cache.put(path, new SoftReference<>(responseData));
+                }
             )
     ).first(HttpResponseData.FileNotFound);
   }
